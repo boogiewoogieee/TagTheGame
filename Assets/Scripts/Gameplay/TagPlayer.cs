@@ -1,6 +1,7 @@
 using StarterAssets;
 using Unity.Cinemachine;
 using Unity.Netcode;
+using Unity.Netcode.Components;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -26,6 +27,8 @@ public class TagPlayer : NetworkBehaviour
     private StarterAssetsInputs _inputs;
     private ThirdPersonController _controller;
     private CharacterController _characterController;
+    private NetworkTransform _networkTransform;
+    private MatchManager _match;
 
     public override void OnNetworkSpawn()
     {
@@ -33,6 +36,7 @@ public class TagPlayer : NetworkBehaviour
         _inputs = GetComponent<StarterAssetsInputs>();
         _controller = GetComponent<ThirdPersonController>();
         _characterController = GetComponent<CharacterController>();
+        _networkTransform = GetComponent<NetworkTransform>();
 
         if (OwnerClientId != Unity.Netcode.NetworkManager.ServerClientId)
         {
@@ -50,15 +54,60 @@ public class TagPlayer : NetworkBehaviour
             // removed here; the empty receivers at the bottom handle the events instead.
             Destroy(_controller);
         }
+
+        _match = FindAnyObjectByType<MatchManager>(FindObjectsInactive.Include);
+        if (_match != null)
+        {
+            _match.RegisterPlayer(this);
+        }
     }
 
     public override void OnNetworkDespawn()
     {
+        if (_match != null)
+        {
+            _match.UnregisterPlayer(this);
+        }
+
         if (IsOwner)
         {
             // StarterAssetsInputs locked the cursor; free it so the UI is clickable after leaving.
             Cursor.lockState = CursorLockMode.None;
         }
+    }
+
+    // Freezes or releases this player on the machine that owns it. The controller keeps
+    // running, so gravity and the idle animation still work while frozen.
+    public void SetInputEnabled(bool inputEnabled)
+    {
+        if (!IsOwner || _playerInput.enabled == inputEnabled)
+        {
+            return;
+        }
+
+        _playerInput.enabled = inputEnabled;
+        _inputs.cursorLocked = inputEnabled;
+        Cursor.lockState = inputEnabled ? CursorLockMode.Locked : CursorLockMode.None;
+
+        if (!inputEnabled)
+        {
+            // PlayerInput stops sending values, so clear the last ones or the character keeps walking.
+            _inputs.move = Vector2.zero;
+            _inputs.look = Vector2.zero;
+            _inputs.jump = false;
+            _inputs.sprint = false;
+        }
+    }
+
+    // Sent by the host when a round restarts. The transform is owner-authoritative, so the
+    // host cannot move the player; the owner moves itself and tells everyone it teleported.
+    [Rpc(SendTo.Owner, InvokePermission = RpcInvokePermission.Server)]
+    public void ReturnToSpawnRpc(Vector3 position, Quaternion rotation)
+    {
+        // The CharacterController would undo the move if it stayed on.
+        _characterController.enabled = false;
+        _networkTransform.Teleport(position, rotation, transform.localScale);
+        _characterController.enabled = true;
     }
 
     // The prefab ships with input and movement switched off, so only the owner ever drives it.

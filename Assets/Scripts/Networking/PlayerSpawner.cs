@@ -63,6 +63,21 @@ public class PlayerSpawner : MonoBehaviour
         response.Rotation = spawnPoints[slot].rotation;
     }
 
+    // The pose a connected player first appeared at; used to send players back when a round restarts.
+    public bool TryGetSpawnPose(ulong clientId, out Vector3 position, out Quaternion rotation)
+    {
+        if (_slotByClient.TryGetValue(clientId, out int slot))
+        {
+            position = spawnPoints[slot].position;
+            rotation = spawnPoints[slot].rotation;
+            return true;
+        }
+
+        position = Vector3.zero;
+        rotation = Quaternion.identity;
+        return false;
+    }
+
     private int FindFreeSlot()
     {
         for (int slot = 0; slot < spawnPoints.Length; slot++)
