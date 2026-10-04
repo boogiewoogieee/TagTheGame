@@ -9,6 +9,9 @@ public class PlayerSpawner : MonoBehaviour
     [Tooltip("One spawn point per player. When every point is taken, the match is full.")]
     public Transform[] spawnPoints;
 
+    [Tooltip("Player prefab for everyone except the host, who gets the default player prefab of the NetworkManager. Leave empty to give every player the default.")]
+    public GameObject clientPlayerPrefab;
+
     private readonly Dictionary<ulong, int> _slotByClient = new Dictionary<ulong, int>();
     private NetworkManager _networkManager;
 
@@ -61,6 +64,13 @@ public class PlayerSpawner : MonoBehaviour
         response.CreatePlayerObject = true;
         response.Position = spawnPoints[slot].position;
         response.Rotation = spawnPoints[slot].rotation;
+
+        // The host tells every machine which prefab to spawn for this player, so both sides
+        // show the same character without any extra syncing.
+        if (clientPlayerPrefab != null && request.ClientNetworkId != NetworkManager.ServerClientId)
+        {
+            response.PlayerPrefabHash = clientPlayerPrefab.GetComponent<NetworkObject>().PrefabIdHash;
+        }
     }
 
     // The pose a connected player first appeared at; used to send players back when a round restarts.
