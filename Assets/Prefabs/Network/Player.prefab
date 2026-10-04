@@ -9,6 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8548883719510028461}
+  - component: {fileID: 2691534226484060402}
   m_Layer: 0
   m_Name: PlayerCameraRoot
   m_TagString: CinemachineTarget
@@ -31,6 +32,14 @@ Transform:
   m_Children: []
   m_Father: {fileID: 6589791392991708067}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!81 &2691534226484060402
+AudioListener:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2295483737219965040}
+  m_Enabled: 0
 --- !u!1 &2958009824322551346
 GameObject:
   m_ObjectHideFlags: 0
@@ -459,6 +468,7 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   cameraRoot: {fileID: 8548883719510028461}
   bombAnchor: {fileID: 7475359638664889334}
+  listener: {fileID: 2691534226484060402}
   tintedRenderers:
   - {fileID: 8912485081200204914}
   - {fileID: 2304217024981965353}

@@ -8,6 +8,9 @@ public class BombFuse : MonoBehaviour
     [Tooltip("Effect spawned at the position of the bomb when it explodes.")]
     public GameObject explosionPrefab;
 
+    [Tooltip("Sound spawned at the position of the bomb when it explodes. Every machine plays its own copy, so nothing extra is sent over the network.")]
+    public GameObject explosionSoundPrefab;
+
     public UnityEvent onExploded;
 
     // The bomb is a scene root object whenever nobody holds it.
@@ -39,6 +42,12 @@ public class BombFuse : MonoBehaviour
         {
             GameObject explosion = Instantiate(explosionPrefab, transform.position, Quaternion.identity);
             Destroy(explosion, GetEffectDuration(explosion));
+        }
+
+        if (explosionSoundPrefab != null)
+        {
+            // The sound object removes itself when its clip has finished.
+            Instantiate(explosionSoundPrefab, transform.position, Quaternion.identity);
         }
 
         Detach();

@@ -3444,6 +3444,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BombFuse
   explosionPrefab: {fileID: 560014183069458990, guid: 621e45f610d611746802ad828f66b094, type: 3}
+  explosionSoundPrefab: {fileID: 8517182342403317286, guid: fc8743c76ea7f88449b3b8b1afde2575, type: 3}
   onExploded:
     m_PersistentCalls:
       m_Calls: []

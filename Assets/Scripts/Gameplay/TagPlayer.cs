@@ -15,6 +15,9 @@ public class TagPlayer : NetworkBehaviour
     [Tooltip("The bomb sits here while this player holds it.")]
     public Transform bombAnchor;
 
+    [Tooltip("The ears of this player. Switched on only on the machine that owns the player, so sounds are heard from the character and not from the camera behind it.")]
+    public AudioListener listener;
+
     [Tooltip("Renderers that get tinted so the two players look different.")]
     public Renderer[] tintedRenderers;
 
@@ -29,6 +32,7 @@ public class TagPlayer : NetworkBehaviour
     private CharacterController _characterController;
     private NetworkTransform _networkTransform;
     private MatchManager _match;
+    private AudioListener _cameraListener;
 
     public override void OnNetworkSpawn()
     {
@@ -73,6 +77,17 @@ public class TagPlayer : NetworkBehaviour
         {
             // StarterAssetsInputs locked the cursor; free it so the UI is clickable after leaving.
             Cursor.lockState = CursorLockMode.None;
+
+            // Hand listening back to the camera, in the same order as below: never two at once.
+            if (listener != null)
+            {
+                listener.enabled = false;
+            }
+
+            if (_cameraListener != null)
+            {
+                _cameraListener.enabled = true;
+            }
         }
     }
 
@@ -127,6 +142,20 @@ public class TagPlayer : NetworkBehaviour
         if (_inputs.cursorLocked)
         {
             Cursor.lockState = CursorLockMode.Locked;
+        }
+
+        // Unity allows one active listener. The scene has one on the main camera; switch it
+        // off before this one goes on, so distance is measured from the character.
+        if (listener != null)
+        {
+            Camera mainCamera = Camera.main;
+            _cameraListener = mainCamera != null ? mainCamera.GetComponent<AudioListener>() : null;
+            if (_cameraListener != null)
+            {
+                _cameraListener.enabled = false;
+            }
+
+            listener.enabled = true;
         }
     }
 
