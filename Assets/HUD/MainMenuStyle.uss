@@ -29,4 +29,275 @@
     position: relative;
     -unity-text-align: middle-center;
     -unity-font-style: bold;
+    transition-duration: 0.35s;
+}
+
+.button:hover {
+    scale: 1.1 1.1;
+    background-color: rgb(209, 191, 50);
+}
+
+.button:active {
+    scale: 1.1 1.1;
+    background-color: rgb(233, 85, 28);
+    transition-duration: 0.5s;
+}
+
+.slider {
+}
+/* --- STYLIZACJA SUWAKÓW (SLIDERÓW) W TWOJEJ STYLISTYCE --- */
+
+/* Kolor toru (szyny), po której jeŸdzi suwak */
+.unity-base-slider__tracker {
+    background-color: rgb(5, 58, 5); 
+    border-radius: 4px;
+    height: 6px;
+}
+
+/* Kolor chwytaka (suwaka, który przeci¹gamy) – pasuj¹cy zieleni¹ do przycisków */
+.unity-base-slider__dragger {
+    background-color: rgb(145, 183, 120); 
+    border-color: rgb(5, 58, 5);     
+    border-width: 2px;
+    border-radius: 6px;
+    width: 16px;
+    height: 22px;
+}
+
+/* Efekt najechana myszk¹ na chwytak suwaka (u¿ywam koloru hover z Twoich przycisków) */
+.unity-base-slider__dragger:hover {
+    background-color: rgb(209, 191, 50); 
+}
+
+/* Kolor tekstów podpisów przy suwakach (¿eby by³y czytelne) */
+.unity-base-field__label {
+    color: rgb(5, 58, 5);            
+    -unity-font-style: bold;
+}
+
+
+/* ==========================================
+   STYLISTYKA KONTROLKEK: TEXTFIELD, TOGGLE, DROPDOWN
+   ========================================== */
+
+/* --- 1. POLA TEKSTOWE (TextField) --- */
+.unity-text-field__input {
+    background-color: rgb(230, 240, 225); /* Jasne t³o pola */
+    border-color: rgb(5, 58, 5);         /* Ciemna ramka w stylu przycisków */
+    border-width: 2px;
+    border-radius: 6px;
+    color: rgb(5, 58, 5);                /* Kolor wpisywanego tekstu */
+    padding: 4px 8px;
+}
+
+/* Efekt po klikniêciu w pole tekstowe (fokus) */
+.unity-text-field__input:focus {
+    border-color: rgb(209, 191, 50);     /* ¯ó³ty akcent z Twojego :hover przycisków */
+}
+
+
+/* --- 2. CHECKBOXY / TOGGLE --- */
+.unity-toggle__input {
+    cursor: root;
+}
+
+/* T³o odznaczonego kwadracika */
+.unity-toggle__checkmark {
+    background-color: rgb(230, 240, 225);
+    border-color: rgb(5, 58, 5);
+    border-width: 2px;
+    border-radius: 4px;
+    width: 18px;
+    height: 18px;
+}
+
+/* Kolor wype³nienia po zaznaczeniu ptaszka */
+.unity-toggle__input:checked > .unity-toggle__checkmark {
+    background-color: rgb(145, 183, 120); /* Zielony kolor z Twoich przycisków */
+    border-color: rgb(5, 58, 5);
+}
+
+
+/* --- 3. DROPDOWN (Wybór listy rozwijanej) --- */
+.unity-base-popup-field__button {
+    background-color: rgb(145, 183, 120); /* Zielone t³o przycisku dropdowna */
+    border-color: rgb(5, 58, 5);          /* Ciemna ramka */
+    border-width: 2px;
+    border-radius: 6px;
+    color: rgb(5, 58, 5);                 /* Tekst wewn¹trz dropdowna */
+    -unity-font-style: bold;
+    padding: 4px 10px;
+}
+
+/* Efekt po najechaniu myszk¹ na dropdown */
+.unity-base-popup-field__button:hover {
+    background-color: rgb(209, 191, 50);  /* ¯ó³ty akcent */
+}
+
+/* Strza³ka w dropdownie */
+.unity-base-popup-field__arrow {
+    -unity-background-image-tint-color: rgb(5, 58, 5);
+}
+/* --- POPRAWNY STYL DLA DROPDOWNA --- */
+
+/* G³ówny kontener dropdowna */
+.unity-base-popup-field {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+/* Etykieta z tekstem (np. "Can join my group") */
+.unity-base-popup-field__label {
+    color: rgb(5, 58, 5);
+    -unity-font-style: bold;
+    min-width: 120px;
+}
+
+/* W³aœciwy przycisk z wybran¹ opcj¹ (np. "Anyone") – tu wraca t³o! */
+.unity-base-popup-field__input {
+    background-color: rgb(230, 240, 225); /* Jasne t³o, takie jak w polu tekstowym */
+    border-color: rgb(5, 58, 5);          /* Ciemna ramka w stylu przycisków */
+    border-width: 2px;
+    border-radius: 6px;
+    padding: 4px 10px;
+    flex-grow: 1;
+}
+
+/* Tekst wewn¹trz przycisku dropdowna */
+.unity-base-popup-field__text {
+    color: rgb(5, 58, 5);
+    -unity-font-style: bold;
+}
+
+/* Efekt po najechaniu myszk¹ na dropdown */
+.unity-base-popup-field__input:hover {
+    background-color: rgb(209, 191, 50); /* ¯ó³ty akcent z hovera przycisków */
+}
+/* --- POPRAWNY STYL DLA DROPDOWNA --- */
+
+/* G³ówny kontener dropdowna */
+.unity-base-popup-field {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+/* Etykieta z tekstem (np. "Can join my group") */
+.unity-base-popup-field__label {
+    color: rgb(5, 58, 5);
+    -unity-font-style: bold;
+    min-width: 120px;
+}
+
+/* W³aœciwy przycisk z wybran¹ opcj¹ (np. "Anyone") – tu wraca t³o! */
+.unity-base-popup-field__input {
+    background-color: rgb(230, 240, 225); /* Jasne t³o, takie jak w polu tekstowym */
+    border-color: rgb(5, 58, 5);          /* Ciemna ramka w stylu przycisków */
+    border-width: 2px;
+    border-radius: 6px;
+    padding: 4px 10px;
+    flex-grow: 1;
+}
+
+/* Tekst wewn¹trz przycisku dropdowna */
+.unity-base-popup-field__text {
+    color: rgb(5, 58, 5);
+    -unity-font-style: bold;
+}
+
+/* Efekt po najechaniu myszk¹ na dropdown */
+.unity-base-popup-field__input:hover {
+    background-color: rgb(209, 191, 50); /* ¯ó³ty akcent z hovera przycisków */
+}
+/* --- POPRAWNY I CZYSTY STYL DLA DROPDOWNA --- */
+
+.unity-base-popup-field {
+    margin-bottom: 15px;
+}
+
+.unity-base-popup-field__label {
+    color: rgb(5, 58, 5);
+    -unity-font-style: bold;
+}
+
+/* W³aœciwe pole wyboru (pude³ko) */
+.unity-base-popup-field__input {
+    background-color: rgb(230, 240, 225); 
+    border-color: rgb(5, 58, 5);          
+    border-width: 2px;
+    border-radius: 6px;
+    padding: 6px 10px;
+}
+
+.unity-base-popup-field__text {
+    color: rgb(5, 58, 5);
+    -unity-font-style: bold;
+}
+
+.unity-base-popup-field__input:hover {
+    background-color: rgb(209, 191, 50);  
+}
+/* --- WYŒRODKOWANIE I STYLIZACJA TOGGLE (HOST SERVER) --- */
+
+.unity-toggle {
+    align-self: center; /* Wyœrodkowuje ca³y element poziomo w oknie */
+    margin-bottom: 15px;
+    width: 80%;         /* Dopasuj szerokoœæ, jeœli potrzebujesz */
+}
+
+/* Etykieta prze³¹cznika */
+.unity-toggle__label {
+    color: rgb(5, 58, 5);
+    -unity-font-style: bold;
+}
+
+/* W³aœciwy kwadracik (checkbox) */
+.unity-toggle__input {
+    flex-direction: row-reverse; /* Opcjonalnie: odwraca kolejnoœæ, ¿eby kwadracik by³ z innej strony ni¿ tekst, jeœli wolisz */
+    justify-content: flex-start;
+}
+
+.unity-toggle__checkmark {
+    background-color: rgb(230, 240, 225);
+    border-color: rgb(5, 58, 5);
+    border-width: 2px;
+    border-radius: 4px;
+    width: 20px;
+    height: 20px;
+}
+
+.unity-toggle__input:checked > .unity-toggle__checkmark {
+    background-color: rgb(145, 183, 120); 
+    border-color: rgb(5, 58, 5);
+}
+/* --- BEZPIECZNE NAPRAWIENIE ETYKIET W SETTINGS I MULTIPLAYER --- */
+
+/* Przywracamy domyœlny, poprawny uk³ad etykiet, ¿eby "Low" i "High" nie nachodzi³y na siebie */
+.unity-base-field__label {
+    color: rgb(5, 58, 5);
+    -unity-font-style: bold;
+    min-width: 110px; /* Zapewnia odpowiedni¹ przestrzeñ na tekst */
+}
+
+/* Styl suwaków */
+.unity-base-slider__tracker {
+    background-color: rgb(5, 58, 5); 
+    border-radius: 4px;
+    height: 6px;
+}
+
+.unity-base-slider__dragger {
+    background-color: rgb(145, 183, 120); 
+    border-color: rgb(5, 58, 5);     
+    border-width: 2px;
+    border-radius: 6px;
+    min-width: 16px;
+    min-height: 22px;
+}
+
+.unity-base-slider__dragger:hover {
+    background-color: rgb(209, 191, 50); 
 }
