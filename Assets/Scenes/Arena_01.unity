@@ -5228,6 +5228,7 @@ MonoBehaviour:
   spawnPoints:
   - {fileID: 2113741221}
   - {fileID: 1434738489}
+  clientPlayerPrefab: {fileID: 3201774730281561836, guid: a673db7a9b78cda4cb4deb32838a1c85, type: 3}
 --- !u!4 &647151059
 Transform:
   m_ObjectHideFlags: 0

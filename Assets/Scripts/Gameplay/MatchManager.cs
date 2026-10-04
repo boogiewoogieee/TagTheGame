@@ -178,9 +178,9 @@ public class MatchManager : NetworkBehaviour
             }
 
             TagPlayer holder = FindPlayer(_shownHolder);
-            if (holder != null && !bomb.IsAttachedTo(holder.bombAnchor))
+            if (holder != null && !bomb.IsAttachedTo(holder.BombAnchor))
             {
-                bomb.AttachTo(holder.bombAnchor);
+                bomb.AttachTo(holder.BombAnchor);
             }
         }
         else if (_shownPhase == MatchPhase.Playing)

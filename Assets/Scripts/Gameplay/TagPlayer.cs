@@ -12,19 +12,17 @@ public class TagPlayer : NetworkBehaviour
     [Tooltip("Followed by the Cinemachine camera on the machine that owns this player.")]
     public Transform cameraRoot;
 
-    [Tooltip("The bomb sits here while this player holds it.")]
-    public Transform bombAnchor;
-
     [Tooltip("The ears of this player. Switched on only on the machine that owns the player, so sounds are heard from the character and not from the camera behind it.")]
     public AudioListener listener;
 
-    [Tooltip("Renderers that get tinted so the two players look different.")]
-    public Renderer[] tintedRenderers;
+    [Tooltip("Where the bomb sits, measured from the chest bone of this model. Each character model needs its own value.")]
+    public Vector3 bombLocalPosition;
 
-    [Tooltip("Tint for every player except the host, who keeps the original look.")]
-    public Color otherPlayerTint = new Color(1f, 0.55f, 0.45f);
+    [Tooltip("How the bomb is turned, relative to the chest bone of this model.")]
+    public Vector3 bombLocalEulerAngles;
 
-    private static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
+    // The bomb is parented here while this player holds it. Created when the player spawns.
+    public Transform BombAnchor { get; private set; }
 
     private PlayerInput _playerInput;
     private StarterAssetsInputs _inputs;
@@ -41,11 +39,7 @@ public class TagPlayer : NetworkBehaviour
         _controller = GetComponent<ThirdPersonController>();
         _characterController = GetComponent<CharacterController>();
         _networkTransform = GetComponent<NetworkTransform>();
-
-        if (OwnerClientId != Unity.Netcode.NetworkManager.ServerClientId)
-        {
-            ApplyTint(otherPlayerTint);
-        }
+        BombAnchor = CreateBombAnchor();
 
         if (IsOwner)
         {
@@ -159,15 +153,36 @@ public class TagPlayer : NetworkBehaviour
         }
     }
 
-    private void ApplyTint(Color tint)
+    // The chest is found through the humanoid mapping of the Animator instead of a bone name,
+    // so the same code works for every humanoid character model.
+    private Transform CreateBombAnchor()
     {
-        MaterialPropertyBlock block = new MaterialPropertyBlock();
-        foreach (Renderer tinted in tintedRenderers)
+        Animator animator = GetComponent<Animator>();
+        Transform chest = animator.GetBoneTransform(HumanBodyBones.Chest);
+        if (chest == null)
         {
-            tinted.GetPropertyBlock(block);
-            block.SetColor(BaseColorId, tint);
-            tinted.SetPropertyBlock(block);
+            chest = animator.GetBoneTransform(HumanBodyBones.UpperChest);
         }
+
+        if (chest == null)
+        {
+            chest = animator.GetBoneTransform(HumanBodyBones.Spine);
+        }
+
+        if (chest == null)
+        {
+            // Not a humanoid model: keep the bomb on the player root rather than fail.
+            chest = transform;
+        }
+
+        Transform anchor = new GameObject("BombAnchor").transform;
+        anchor.SetParent(chest, false);
+        anchor.SetLocalPositionAndRotation(bombLocalPosition, Quaternion.Euler(bombLocalEulerAngles));
+
+        // Cancel the scale of the model so the bomb keeps its own size on every character.
+        Vector3 scale = chest.lossyScale;
+        anchor.localScale = new Vector3(1f / scale.x, 1f / scale.y, 1f / scale.z);
+        return anchor;
     }
 
     private void OnLand(AnimationEvent animationEvent)
