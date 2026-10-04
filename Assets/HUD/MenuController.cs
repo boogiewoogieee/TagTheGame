@@ -64,7 +64,7 @@ public class MenuController : MonoBehaviour
 
         if (screenMultiplayer != null)
         {
-            btnCreateLobby = screenMultiplayer.Q<Button>("CreatLobby");
+            btnCreateLobby = screenMultiplayer.Q<Button>("Create_Lobby");
             btnCloseMultiplayer = screenMultiplayer.Q<Button>("X");
         }
 
