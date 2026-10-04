@@ -1,0 +1,8 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" editor-extension-mode="False">
+    <Style src="MatchHud.uss" />
+    <ui:VisualElement name="MatchHud" picking-mode="Ignore" class="hud-root">
+        <ui:Label name="Timer" text="30" picking-mode="Ignore" class="hud-timer" />
+        <ui:Label name="Status" text="Opponent has the bomb" picking-mode="Ignore" class="hud-status" />
+        <ui:Label name="Result" text="You win" picking-mode="Ignore" class="hud-result" />
+    </ui:VisualElement>
+</ui:UXML>

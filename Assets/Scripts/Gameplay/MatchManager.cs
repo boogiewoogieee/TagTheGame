@@ -53,6 +53,9 @@ public class MatchManager : NetworkBehaviour
 
     public bool LocalPlayerHasBomb => IsSpawned && BombHolderId.Value == NetworkManager.LocalClientId;
 
+    // True on the host while two players are in, which is when a round can be restarted.
+    public bool CanRestart => IsSpawned && IsServer && _players.Count >= 2;
+
     // Netcode only lets the host look up the objects of other players, so players sign in
     // here when they spawn. That gives every machine the same list.
     public void RegisterPlayer(TagPlayer player)
@@ -77,7 +80,7 @@ public class MatchManager : NetworkBehaviour
     // Host only. Sends both players back to their spawn points and starts a fresh round.
     public void RestartRound()
     {
-        if (!IsServer || _players.Count < 2)
+        if (!CanRestart)
         {
             return;
         }

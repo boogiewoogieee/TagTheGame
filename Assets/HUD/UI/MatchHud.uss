@@ -1,0 +1,47 @@
+.hud-root {
+    flex-grow: 1;
+    align-items: center;
+}
+
+.hud-timer {
+    margin-top: 30px;
+    font-size: 96px;
+    color: rgb(255, 255, 255);
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+    -unity-text-outline-width: 2px;
+    -unity-text-outline-color: rgb(0, 0, 0);
+}
+
+.hud-status {
+    margin-top: 10px;
+    font-size: 40px;
+    color: rgb(255, 255, 255);
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+    -unity-text-outline-width: 1px;
+    -unity-text-outline-color: rgb(0, 0, 0);
+}
+
+.hud-status-danger {
+    color: rgb(255, 96, 64);
+}
+
+.hud-result {
+    position: absolute;
+    top: 20%;
+    font-size: 140px;
+    color: rgb(255, 255, 255);
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+    -unity-text-outline-width: 3px;
+    -unity-text-outline-color: rgb(0, 0, 0);
+}
+
+.hud-result-win {
+    color: rgb(125, 220, 110);
+}
+
+.hud-result-lose {
+    color: rgb(255, 96, 64);
+}
