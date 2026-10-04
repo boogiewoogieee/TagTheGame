@@ -28,7 +28,7 @@ public class MainMenuEvents : MonoBehaviour
     {
         _button.UnregisterCallback<ClickEvent>(OnPlayGameClick);
 
-        for (int i = 0; i <= _menuButtons.Count; i++)
+        for (int i = 0; i < _menuButtons.Count; i++)
         {
             _menuButtons[i].UnregisterCallback<ClickEvent>(OnAllButtonsClick);
         }
