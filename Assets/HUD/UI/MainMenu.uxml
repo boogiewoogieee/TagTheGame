@@ -1,0 +1,9 @@
+<ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <Style src="project://database/Assets/HUD/MainMenuStyle.uss?fileID=7433441132597879392&amp;guid=e4872d0e85f10ac4aaff57cc4b47be44&amp;type=3#MainMenuStyle"/>
+    <ui:VisualElement name="Container" style="flex-grow: 1; background-image: url(&quot;project://database/Assets/THRAX/Starter%20Assets/Runtime/Mobile/UI/Images/wp9382134-landscape-illustration-wallpapers.jpg?fileID=2800000&amp;guid=b16f70ace1869f841844913c1986a132&amp;type=3#wp9382134-landscape-illustration-wallpapers&quot;); width: 1920px; height: 1080px;">
+        <ui:Label text="Tag The Game" class="header" style="align-self: center;"/>
+        <ui:Button text="Multiplayer" name="Multiplayer" class="button"/>
+        <ui:Button text="Settings " name="Settings" class="button"/>
+        <ui:Button text="Exit" name="Exit" class="button"/>
+    </ui:VisualElement>
+</ui:UXML>

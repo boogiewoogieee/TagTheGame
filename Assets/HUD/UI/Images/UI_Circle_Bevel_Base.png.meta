@@ -1,17 +1,17 @@
 fileFormatVersion: 2
-guid: 603eabcd71ec55e41be090a50f8b646e
+guid: b74c31d447d2f5d41a61081bdf5e7126
 AssetOrigin:
   serializedVersion: 1
-  productId: 116144
-  packageName: 3D Modern Menu UI
-  packageVersion: 1.3.1
-  assetPath: Assets/SlimUI/Modern Menu 1/Graphics/Icons/Arrow 128px.png
-  uploadId: 628808
+  productId: 196526
+  packageName: First Person + Third Person | Character Controllers
+  packageVersion: 2.0.1
+  assetPath: Assets/Starter Assets/Runtime/Mobile/UI/Images/UI_Circle_Bevel_Base.png
+  uploadId: 998422
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 1959542065926417730
-    second: Arrow 128px_0
+      213: 6869121488389641498
+    second: UI_Circle_Bevel_Base_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -75,15 +75,15 @@ TextureImporter:
   compressionQualitySet: 0
   textureFormatSet: 0
   ignorePngGamma: 0
-  applyGammaDecoding: 1
+  applyGammaDecoding: 0
   swizzle: 50462976
   cookieLightType: 1
   platformSettings:
   - serializedVersion: 4
     buildTarget: DefaultTexturePlatform
-    maxTextureSize: 128
+    maxTextureSize: 2048
     resizeAlgorithm: 0
-    textureFormat: -1
+    textureFormat: 4
     textureCompression: 1
     compressionQuality: 50
     crunchedCompression: 0
@@ -94,9 +94,9 @@ TextureImporter:
     forceMaximumCompressionQuality_BC6H_BC7: 0
   - serializedVersion: 4
     buildTarget: Standalone
-    maxTextureSize: 128
+    maxTextureSize: 2048
     resizeAlgorithm: 0
-    textureFormat: -1
+    textureFormat: 4
     textureCompression: 1
     compressionQuality: 50
     crunchedCompression: 0
@@ -107,9 +107,9 @@ TextureImporter:
     forceMaximumCompressionQuality_BC6H_BC7: 0
   - serializedVersion: 4
     buildTarget: Android
-    maxTextureSize: 512
+    maxTextureSize: 2048
     resizeAlgorithm: 0
-    textureFormat: -1
+    textureFormat: 4
     textureCompression: 1
     compressionQuality: 50
     crunchedCompression: 0
@@ -117,12 +117,12 @@ TextureImporter:
     overridden: 0
     ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
-    forceMaximumCompressionQuality_BC6H_BC7: 1
+    forceMaximumCompressionQuality_BC6H_BC7: 0
   - serializedVersion: 4
     buildTarget: WebGL
-    maxTextureSize: 512
+    maxTextureSize: 2048
     resizeAlgorithm: 0
-    textureFormat: -1
+    textureFormat: 4
     textureCompression: 1
     compressionQuality: 50
     crunchedCompression: 0
@@ -130,18 +130,18 @@ TextureImporter:
     overridden: 0
     ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
-    forceMaximumCompressionQuality_BC6H_BC7: 1
+    forceMaximumCompressionQuality_BC6H_BC7: 0
   spriteSheet:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Arrow 128px_0
+      name: UI_Circle_Bevel_Base_0
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 128
-        height: 128
+        width: 1024
+        height: 1024
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -150,8 +150,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 24daaf97021b13b10800000000000000
-      internalID: 1959542065926417730
+      spriteID: a15977a7995045f50800000000000000
+      internalID: 6869121488389641498
       vertices: []
       indices: 
       edges: []
