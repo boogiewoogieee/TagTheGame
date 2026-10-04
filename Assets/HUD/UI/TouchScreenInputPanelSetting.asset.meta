@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: ee0255d8293d73e4db5d42d5c5ba663e
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 11400000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 196526
+  packageName: First Person + Third Person | Character Controllers
+  packageVersion: 2.0.1
+  assetPath: Assets/Starter Assets/Runtime/Mobile/UI/TouchScreenInputPanelSetting.asset
+  uploadId: 998422

@@ -1,0 +1,4 @@
+# Pull requests that change shared project configuration
+# automatically request a review from the project lead.
+/Packages/        @boogiewoogieee
+/ProjectSettings/ @boogiewoogieee
