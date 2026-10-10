@@ -91,8 +91,7 @@ public class MenuController : MonoBehaviour
         if (btnExit != null) btnExit.clicked += QuitGame;
 
         if (btnHostLobby != null) btnHostLobby.clicked += OpenMultiplayerSettingsScreen;
-        if (btnJoinLobby != null) btnJoinLobby.clicked += OpenLobbyScreen;
-        if (btnCreateLobby != null) btnCreateLobby.clicked += OpenLobbyScreen; // <--- Przenosi do Lobby!
+        // Join and Create Lobby are handled by MenuNetwork; the lobby opens once the network reports success.
 
         if (btnCloseJoining != null) btnCloseJoining.clicked += OpenMainScreen;
         if (btnCloseSettings != null) btnCloseSettings.clicked += OpenMainScreen;
@@ -113,8 +112,6 @@ public class MenuController : MonoBehaviour
         if (btnExit != null) btnExit.clicked -= QuitGame;
 
         if (btnHostLobby != null) btnHostLobby.clicked -= OpenMultiplayerSettingsScreen;
-        if (btnJoinLobby != null) btnJoinLobby.clicked -= OpenLobbyScreen;
-        if (btnCreateLobby != null) btnCreateLobby.clicked -= OpenLobbyScreen;
 
         if (btnCloseJoining != null) btnCloseJoining.clicked -= OpenMainScreen;
         if (btnCloseSettings != null) btnCloseSettings.clicked -= OpenMainScreen;
@@ -154,11 +151,11 @@ public class MenuController : MonoBehaviour
         }
     }
 
-    private void OpenMainScreen() => ShowScreen(screenMain);
-    private void OpenJoiningScreen() => ShowScreen(screenJoining);
+    public void OpenMainScreen() => ShowScreen(screenMain);
+    public void OpenJoiningScreen() => ShowScreen(screenJoining);
     private void OpenMultiplayerSettingsScreen() => ShowScreen(screenMultiplayer);
     private void OpenSettingsScreen() => ShowScreen(screenSettings);
-    private void OpenLobbyScreen() => ShowScreen(screenLobby);
+    public void OpenLobbyScreen() => ShowScreen(screenLobby);
 
     public void ShowGameOverPopUp(bool isWinner)
     {
