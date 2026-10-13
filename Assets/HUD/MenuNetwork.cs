@@ -25,6 +25,9 @@ public class MenuNetwork : MonoBehaviour
     [Min(1)]
     public int connectAttempts = 5;
 
+    [Tooltip("The lobby state in this scene. Start match goes through it so joining gets locked.")]
+    public LobbyManager lobby;
+
     [Tooltip("Fired on the host once it is listening; the menu shows the lobby.")]
     public UnityEvent onHosted;
 
@@ -207,6 +210,11 @@ public class MenuNetwork : MonoBehaviour
         }
 
         _startButton.SetEnabled(false);
+        if (lobby != null)
+        {
+            lobby.LockJoining();
+        }
+
         _networkManager.SceneManager.LoadScene(arenaScene, LoadSceneMode.Single);
     }
 

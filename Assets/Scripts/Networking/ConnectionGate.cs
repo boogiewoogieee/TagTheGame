@@ -11,6 +11,9 @@ public class ConnectionGate : MonoBehaviour
     [Min(1)]
     public int maxPlayers = 2;
 
+    // Closed by the lobby when a match starts; opens again whenever the host stops.
+    public bool AcceptingPlayers { get; set; } = true;
+
     private NetworkManager _networkManager;
 
     private void Start()
@@ -23,18 +26,38 @@ public class ConnectionGate : MonoBehaviour
         }
 
         _networkManager.ConnectionApprovalCallback = ApproveConnection;
+        _networkManager.OnServerStopped += OnServerStopped;
     }
 
     private void OnDestroy()
     {
-        if (_networkManager != null && _networkManager.ConnectionApprovalCallback == ApproveConnection)
+        if (_networkManager == null)
+        {
+            return;
+        }
+
+        if (_networkManager.ConnectionApprovalCallback == ApproveConnection)
         {
             _networkManager.ConnectionApprovalCallback = null;
         }
+
+        _networkManager.OnServerStopped -= OnServerStopped;
+    }
+
+    private void OnServerStopped(bool wasHost)
+    {
+        AcceptingPlayers = true;
     }
 
     private void ApproveConnection(NetworkManager.ConnectionApprovalRequest request, NetworkManager.ConnectionApprovalResponse response)
     {
+        if (!AcceptingPlayers)
+        {
+            response.Approved = false;
+            response.Reason = "The match has already started.";
+            return;
+        }
+
         // Approved clients are added to the connected list straight away, so the count is current.
         if (_networkManager.ConnectedClientsIds.Count >= maxPlayers)
         {
