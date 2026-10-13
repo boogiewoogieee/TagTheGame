@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.UIElements;
 
 // Shows the fuse timer, who holds the bomb and the round result. It only reads the
@@ -10,9 +11,13 @@ public class MatchHud : MonoBehaviour
     [Tooltip("The match this HUD shows.")]
     public MatchManager match;
 
+    [Tooltip("Fired when the player presses Leave to menu after the round is over.")]
+    public UnityEvent onLeave;
+
     private Label _timer;
     private Label _status;
     private Label _result;
+    private Button _leave;
     private int _shownSeconds = -1;
 
     private void OnEnable()
@@ -28,7 +33,22 @@ public class MatchHud : MonoBehaviour
         _timer = root.Q<Label>("Timer");
         _status = root.Q<Label>("Status");
         _result = root.Q<Label>("Result");
+        _leave = root.Q<Button>("Leave");
+        _leave.clicked += OnLeaveClicked;
         _shownSeconds = -1;
+    }
+
+    private void OnDisable()
+    {
+        if (_leave != null)
+        {
+            _leave.clicked -= OnLeaveClicked;
+        }
+    }
+
+    private void OnLeaveClicked()
+    {
+        onLeave.Invoke();
     }
 
     private void Update()
@@ -44,6 +64,7 @@ public class MatchHud : MonoBehaviour
         SetVisible(_timer, inMatch && phase == MatchPhase.Playing);
         SetVisible(_status, inMatch && phase != MatchPhase.RoundOver);
         SetVisible(_result, inMatch && phase == MatchPhase.RoundOver);
+        SetVisible(_leave, inMatch && phase == MatchPhase.RoundOver);
 
         if (!inMatch)
         {

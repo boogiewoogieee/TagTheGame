@@ -4381,6 +4381,7 @@ GameObject:
   - component: {fileID: 537730880}
   - component: {fileID: 537730879}
   - component: {fileID: 537730878}
+  - component: {fileID: 537730881}
   m_Layer: 0
   m_Name: MatchHud
   m_TagString: Untagged
@@ -4401,6 +4402,21 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MatchHud
   match: {fileID: 900908509}
+  onLeave:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 537730881}
+        m_TargetAssemblyTypeName: MatchExit, Assembly-CSharp
+        m_MethodName: LeaveToMenu
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: 
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &537730879
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4439,6 +4455,19 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &537730881
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 537730877}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 96bcd487b04dc7b478bcaced68566cff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MatchExit
+  menuScene: MainMenu
 --- !u!1001 &537751899
 PrefabInstance:
   m_ObjectHideFlags: 0
