@@ -4,20 +4,15 @@ using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
 using UnityEngine;
 using UnityEngine.Events;
-using UnityEngine.SceneManagement;
 using UnityEngine.UIElements;
 
-// The networking half of the main menu. MenuController owns the screens; this owns
-// hosting, joining, leaving and starting the match, and reports back through UnityEvents
-// so the two scripts never reach into each other. The menu scene doubles as the lobby:
-// the host starts the network here, the client joins here, and the host loads the arena
-// for both when the match starts.
+// The networking half of the main menu. MenuController owns the screens and LobbyPanel
+// the lobby; this owns hosting, joining and leaving, and reports back through UnityEvents
+// so the scripts never reach into each other. The menu scene doubles as the lobby: the
+// host starts the network here and the client joins here.
 [RequireComponent(typeof(UIDocument))]
 public class MenuNetwork : MonoBehaviour
 {
-    [Tooltip("Scene the host loads for everyone when the match starts.")]
-    public string arenaScene = "Arena_01";
-
     [Tooltip("Port used by host and client.")]
     public ushort port = 7777;
 
@@ -25,7 +20,7 @@ public class MenuNetwork : MonoBehaviour
     [Min(1)]
     public int connectAttempts = 5;
 
-    [Tooltip("The lobby state in this scene. Start match goes through it so joining gets locked.")]
+    [Tooltip("The lobby state in this scene. It gets this player's name before hosting or joining.")]
     public LobbyManager lobby;
 
     [Tooltip("Fired on the host once it is listening; the menu shows the lobby.")]
@@ -38,17 +33,19 @@ public class MenuNetwork : MonoBehaviour
     public UnityEvent onDisconnected;
 
     private const string AddressPrefsKey = "TagTheGame.JoinAddress";
+    private const string NamePrefsKey = "TagTheGame.PlayerName";
+
+    // This machine's LAN address, which the lobby shows the host.
+    public string LocalAddress { get; private set; }
 
     private NetworkManager _networkManager;
+    private TextField _nameField;
     private TextField _addressField;
     private Label _joinStatus;
-    private Label _lobbyStatus;
     private Button _hostButton;
     private Button _joinButton;
     private Button _cancelButton;
-    private Button _startButton;
     private Button _createLobbyButton;
-    private string _localAddress;
     private bool _connecting;
 
     private void OnEnable()
@@ -65,23 +62,22 @@ public class MenuNetwork : MonoBehaviour
         VisualElement multiplayer = root.Q<VisualElement>("Multiplayer");
         VisualElement lobby = root.Q<VisualElement>("Lobby");
 
+        _nameField = joining.Q<TextField>("PlayerName");
         _addressField = joining.Q<TextField>("Address");
         _joinStatus = joining.Q<Label>("JoinStatus");
         _hostButton = joining.Q<Button>("Host");
         _joinButton = joining.Q<Button>("Join");
         _cancelButton = joining.Q<Button>("Cancel");
         _createLobbyButton = multiplayer.Q<Button>("Create_Lobby");
-        _lobbyStatus = lobby.Q<Label>("LobbyStatus");
-        _startButton = lobby.Q<Button>("StartMatch");
         Button leaveButton = lobby.Q<Button>("Leave");
         Button lobbyClose = lobby.Q<Button>("X");
         Button joiningClose = joining.Q<Button>("X");
 
+        _nameField.value = PlayerPrefs.GetString(NamePrefsKey, "");
         _addressField.value = PlayerPrefs.GetString(AddressPrefsKey, "127.0.0.1");
         _joinButton.clicked += Join;
         _createLobbyButton.clicked += Host;
         _cancelButton.clicked += Cancel;
-        _startButton.clicked += StartMatch;
         leaveButton.clicked += Leave;
         lobbyClose.clicked += Leave;
         joiningClose.clicked += Cancel;
@@ -92,7 +88,7 @@ public class MenuNetwork : MonoBehaviour
         _networkManager.OnClientStopped += OnClientStopped;
         _networkManager.OnTransportFailure += OnTransportFailure;
 
-        _localAddress = FindLocalAddress();
+        LocalAddress = FindLocalAddress();
         ShowIdle("");
     }
 
@@ -106,7 +102,6 @@ public class MenuNetwork : MonoBehaviour
         _joinButton.clicked -= Join;
         _createLobbyButton.clicked -= Host;
         _cancelButton.clicked -= Cancel;
-        _startButton.clicked -= StartMatch;
 
         _networkManager.OnServerStarted -= OnServerStarted;
         _networkManager.OnServerStopped -= OnServerStopped;
@@ -115,37 +110,14 @@ public class MenuNetwork : MonoBehaviour
         _networkManager.OnTransportFailure -= OnTransportFailure;
     }
 
-    private void Update()
-    {
-        if (_networkManager == null || !_networkManager.IsListening)
-        {
-            return;
-        }
-
-        // The lobby text is cheap to rebuild, and polling avoids a callback per event.
-        if (_networkManager.IsHost)
-        {
-            int players = _networkManager.ConnectedClientsIds.Count;
-            bool full = players >= 2;
-            _lobbyStatus.text = full
-                ? players + " of 2 players. Ready to start."
-                : "Waiting for a player to join...\nYour address: " + _localAddress + ", port " + port;
-            _startButton.style.display = DisplayStyle.Flex;
-            _startButton.SetEnabled(full);
-        }
-        else
-        {
-            _lobbyStatus.text = "Connected. Waiting for the host to start the match...";
-            _startButton.style.display = DisplayStyle.None;
-        }
-    }
-
     public void Host()
     {
         if (_networkManager.IsListening)
         {
             return;
         }
+
+        HandNameToLobby();
 
         // Listen on every interface so a LAN partner can connect; the host itself connects locally.
         GetTransport().SetConnectionData("127.0.0.1", port, "0.0.0.0");
@@ -170,6 +142,7 @@ public class MenuNetwork : MonoBehaviour
         }
 
         PlayerPrefs.SetString(AddressPrefsKey, address);
+        HandNameToLobby();
         UnityTransport transport = GetTransport();
         transport.SetConnectionData(address, port);
         transport.ConnectTimeoutMS = 1000;
@@ -199,23 +172,6 @@ public class MenuNetwork : MonoBehaviour
         {
             _networkManager.Shutdown();
         }
-    }
-
-    // Host only. Loads the arena for everyone; PlayerSpawner puts the players in once both have it.
-    public void StartMatch()
-    {
-        if (!_networkManager.IsHost || _networkManager.ConnectedClientsIds.Count < 2)
-        {
-            return;
-        }
-
-        _startButton.SetEnabled(false);
-        if (lobby != null)
-        {
-            lobby.LockJoining();
-        }
-
-        _networkManager.SceneManager.LoadScene(arenaScene, LoadSceneMode.Single);
     }
 
     private void OnServerStarted()
@@ -280,7 +236,19 @@ public class MenuNetwork : MonoBehaviour
         _hostButton.SetEnabled(true);
         _joinButton.SetEnabled(true);
         _cancelButton.style.display = DisplayStyle.None;
-        _startButton.SetEnabled(false);
+    }
+
+    // The lobby registers this player as soon as the network starts, so the name has to be
+    // in place before hosting or joining. An empty name stays empty; the host picks a fallback.
+    private void HandNameToLobby()
+    {
+        string name = LobbyRules.CleanName(_nameField.value, "");
+        _nameField.value = name;
+        PlayerPrefs.SetString(NamePrefsKey, name);
+        if (lobby != null)
+        {
+            lobby.localPlayerName = name;
+        }
     }
 
     private UnityTransport GetTransport()
@@ -288,11 +256,13 @@ public class MenuNetwork : MonoBehaviour
         return (UnityTransport)_networkManager.NetworkConfig.NetworkTransport;
     }
 
-    // Shown to the host so a LAN partner knows what to type. Adapters without a network
-    // give themselves 169.254.x.x addresses, so those only count when nothing else exists.
+    // Shown to the host so a LAN partner knows what to type. A PC often has several
+    // addresses (Wi-Fi, Ethernet, VPNs like Tailscale, adapters with no network), so home
+    // and school network ranges win, then anything else, and 169.254.x.x only as a last resort.
     private static string FindLocalAddress()
     {
-        string fallback = "127.0.0.1";
+        string best = "127.0.0.1";
+        int bestRank = int.MaxValue;
         try
         {
             foreach (IPAddress address in Dns.GetHostEntry(Dns.GetHostName()).AddressList)
@@ -302,18 +272,32 @@ public class MenuNetwork : MonoBehaviour
                     continue;
                 }
 
-                if (!address.ToString().StartsWith("169.254."))
+                int rank = RankAddress(address.GetAddressBytes());
+                if (rank < bestRank)
                 {
-                    return address.ToString();
+                    best = address.ToString();
+                    bestRank = rank;
                 }
-
-                fallback = address.ToString();
             }
         }
         catch (SocketException)
         {
         }
 
-        return fallback;
+        return best;
+    }
+
+    private static int RankAddress(byte[] bytes)
+    {
+        bool privateRange = bytes[0] == 10
+            || (bytes[0] == 172 && bytes[1] >= 16 && bytes[1] <= 31)
+            || (bytes[0] == 192 && bytes[1] == 168);
+        if (privateRange)
+        {
+            return 0;
+        }
+
+        bool linkLocal = bytes[0] == 169 && bytes[1] == 254;
+        return linkLocal ? 2 : 1;
     }
 }
