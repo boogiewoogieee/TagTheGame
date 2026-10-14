@@ -5,7 +5,9 @@
         <ui:Label name="Timer" text="30" picking-mode="Ignore" class="hud-timer" />
         <ui:Label name="Status" text="Opponent has the bomb" picking-mode="Ignore" class="hud-status" />
         <ui:VisualElement name="RoundOver" picking-mode="Ignore" class="hud-overlay hud-round-over">
-            <ui:Label name="Result" text="You win" picking-mode="Ignore" class="hud-result" />
+            <ui:Label name="Result" text="Round won" picking-mode="Ignore" class="hud-result" />
+            <ui:Label name="Score" text="1 : 0" picking-mode="Ignore" class="hud-score" />
+            <ui:Label name="Countdown" text="Next round in 4" picking-mode="Ignore" class="hud-countdown" />
             <ui:Button name="Leave" text="Leave to menu" focusable="false" class="button hud-button" />
         </ui:VisualElement>
         <ui:VisualElement name="Menu" class="hud-overlay hud-menu-backdrop">

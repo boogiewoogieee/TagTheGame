@@ -2,9 +2,10 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UIElements;
 
-// Shows the fuse timer, who holds the bomb and the round result. It only reads the
-// MatchManager: every machine works the numbers out locally from the synchronized clock,
-// so the HUD needs no network traffic of its own.
+// Shows the fuse timer, who holds the bomb, the card between rounds (result, score,
+// countdown) and, until the results screen takes over, the match result. It only reads
+// the MatchManager: every machine works the numbers out locally from the synchronized
+// clock, so the HUD needs no network traffic of its own.
 [RequireComponent(typeof(UIDocument))]
 public class MatchHud : MonoBehaviour
 {
@@ -20,6 +21,8 @@ public class MatchHud : MonoBehaviour
     private Label _timer;
     private Label _status;
     private Label _result;
+    private Label _score;
+    private Label _countdown;
     private VisualElement _roundOver;
     private Button _leave;
     private int _shownSeconds = -1;
@@ -37,6 +40,8 @@ public class MatchHud : MonoBehaviour
         _timer = root.Q<Label>("Timer");
         _status = root.Q<Label>("Status");
         _result = root.Q<Label>("Result");
+        _score = root.Q<Label>("Score");
+        _countdown = root.Q<Label>("Countdown");
         _roundOver = root.Q<VisualElement>("RoundOver");
         _leave = _roundOver.Q<Button>("Leave");
         _leave.clicked += OnLeaveClicked;
@@ -66,10 +71,13 @@ public class MatchHud : MonoBehaviour
         bool inMatch = match != null && match.IsSpawned;
         MatchPhase phase = inMatch ? match.Phase.Value : MatchPhase.WaitingForPlayers;
 
+        bool afterRound = phase == MatchPhase.RoundOver || phase == MatchPhase.MatchOver;
         SetVisible(_timer, inMatch && phase == MatchPhase.Playing);
-        SetVisible(_status, inMatch && phase != MatchPhase.RoundOver);
+        SetVisible(_status, inMatch && !afterRound);
         bool menuOpen = pauseMenu != null && pauseMenu.IsOpen;
-        SetVisible(_roundOver, inMatch && phase == MatchPhase.RoundOver && !menuOpen);
+        SetVisible(_roundOver, inMatch && afterRound && !menuOpen);
+        SetVisible(_countdown, phase == MatchPhase.RoundOver);
+        SetVisible(_leave, phase == MatchPhase.MatchOver);
 
         if (!inMatch)
         {
@@ -95,14 +103,26 @@ public class MatchHud : MonoBehaviour
             _status.text = "Waiting for the other player";
             _status.EnableInClassList("hud-status-danger", false);
         }
+        else if (phase == MatchPhase.RoundOver)
+        {
+            // The loser of the round is recorded by the host, so this is right even after a pass.
+            bool lost = match.LastRoundLoserId.Value == match.NetworkManager.LocalClientId;
+            ShowResult(lost ? "Round lost" : "Round won", lost);
+            _countdown.text = "Next round in " + Mathf.CeilToInt(match.SecondsToNextRound);
+        }
         else
         {
-            // The holder stays set after the explosion, so it tells who lost.
-            bool lost = match.LocalPlayerHasBomb;
-            _result.text = lost ? "You lose" : "You win";
-            _result.EnableInClassList("hud-result-lose", lost);
-            _result.EnableInClassList("hud-result-win", !lost);
+            bool lost = match.WinnerId.Value != match.NetworkManager.LocalClientId;
+            ShowResult(match.OpponentLeft.Value ? "Opponent left" : (lost ? "You lose" : "You win"), lost && !match.OpponentLeft.Value);
         }
+    }
+
+    private void ShowResult(string text, bool lost)
+    {
+        _result.text = text;
+        _result.EnableInClassList("hud-result-lose", lost);
+        _result.EnableInClassList("hud-result-win", !lost);
+        _score.text = match.LocalRoundsWon + " : " + match.OpponentRoundsWon;
     }
 
     private static void SetVisible(VisualElement element, bool visible)

@@ -44,6 +44,26 @@
     color: rgb(255, 96, 64);
 }
 
+.hud-score {
+    margin-top: -10px;
+    font-size: 72px;
+    color: rgb(255, 255, 255);
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+    -unity-text-outline-width: 2px;
+    -unity-text-outline-color: rgb(0, 0, 0);
+}
+
+.hud-countdown {
+    margin-top: 10px;
+    font-size: 40px;
+    color: rgb(255, 255, 255);
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+    -unity-text-outline-width: 1px;
+    -unity-text-outline-color: rgb(0, 0, 0);
+}
+
 /* Full-screen layers on top of the HUD; each one centres its content horizontally. */
 .hud-overlay {
     position: absolute;

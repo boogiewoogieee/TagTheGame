@@ -16,3 +16,6 @@ MonoBehaviour:
   passRange: 1.5
   passCooldown: 1
   latencyTolerance: 1
+  roundsToWin: 2
+  betweenRoundsSeconds: 4
+  nextArenaScene: 
