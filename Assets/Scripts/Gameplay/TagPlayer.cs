@@ -56,6 +56,10 @@ public class TagPlayer : NetworkBehaviour
             // On a copy whose Start never ran those handlers would throw, so the script is
             // removed here; the empty receivers at the bottom handle the events instead.
             Destroy(_controller);
+
+            // Unity tells disabled scripts too when the window regains focus, and this one
+            // would then lock the mouse, trapping it on the round-over screen and the menu.
+            Destroy(_inputs);
         }
 
         _match = FindAnyObjectByType<MatchManager>(FindObjectsInactive.Include);
