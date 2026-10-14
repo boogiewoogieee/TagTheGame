@@ -376,7 +376,6 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   arenaScene: Arena_01
   requiredPlayers: 2
-  localPlayerName: 
   Players:
     UpdateTraits:
       MinSecondsBetweenUpdates: 0
@@ -592,7 +591,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MenuNetwork
   port: 7777
   connectAttempts: 5
-  lobby: {fileID: 897496497}
   onHosted:
     m_PersistentCalls:
       m_Calls:
@@ -629,6 +627,21 @@ MonoBehaviour:
       - m_Target: {fileID: 1451601781}
         m_TargetAssemblyTypeName: MenuController, Assembly-CSharp
         m_MethodName: OpenJoiningScreen
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: 
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  onReturnedToLobby:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 1451601781}
+        m_TargetAssemblyTypeName: MenuController, Assembly-CSharp
+        m_MethodName: OpenLobbyScreen
         m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

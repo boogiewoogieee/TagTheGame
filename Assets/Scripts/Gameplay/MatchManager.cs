@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using Unity.Collections;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 // Runs the bomb-tag match: a series of rounds until one player has enough round wins.
 // The host makes every decision (who holds the bomb, when it explodes, which phase the
@@ -23,6 +24,9 @@ public class MatchManager : NetworkBehaviour
 
     [Tooltip("Used to send players back to their spawn points between rounds.")]
     public PlayerSpawner spawner;
+
+    [Tooltip("Scene the host loads for everyone on Return to lobby.")]
+    public string menuScene = "MainMenu";
 
     public NetworkVariable<ulong> BombHolderId = new NetworkVariable<ulong>(NoHolder);
     public NetworkVariable<double> DetonateAtServerTime = new NetworkVariable<double>();
@@ -101,6 +105,11 @@ public class MatchManager : NetworkBehaviour
     // True on the host at the results screen while both players are still here.
     public bool CanPlayAgain => IsSpawned && IsServer && Phase.Value == MatchPhase.MatchOver && _players.Count >= 2 && !OpponentLeft.Value;
 
+    public bool CanReturnToLobby => IsSpawned && IsServer && Phase.Value == MatchPhase.MatchOver;
+
+    // Only once a second arena exists and is named in the rules.
+    public bool CanGoToNextLevel => CanPlayAgain && rules != null && !string.IsNullOrEmpty(rules.nextArenaScene);
+
     // Netcode only lets the host look up the objects of other players, so players sign in
     // here when they spawn. That gives every machine the same list.
     public void RegisterPlayer(TagPlayer player)
@@ -133,6 +142,29 @@ public class MatchManager : NetworkBehaviour
 
         SendPlayersToSpawn();
         StartMatch();
+    }
+
+    // Host only. Keeps the connection and takes both players back to the lobby scene, where
+    // the lobby reopens for joining and everyone starts not ready.
+    public void ReturnToLobby()
+    {
+        if (!CanReturnToLobby)
+        {
+            return;
+        }
+
+        NetworkManager.SceneManager.LoadScene(menuScene, LoadSceneMode.Single);
+    }
+
+    // Host only. Loads the next arena for everyone; a fresh match starts there.
+    public void GoToNextLevel()
+    {
+        if (!CanGoToNextLevel)
+        {
+            return;
+        }
+
+        NetworkManager.SceneManager.LoadScene(rules.nextArenaScene, LoadSceneMode.Single);
     }
 
     public override void OnNetworkDespawn()
@@ -223,14 +255,21 @@ public class MatchManager : NetworkBehaviour
 
     private void StartMatch()
     {
+        // The lobby left the names on the NetworkManager; the Editor shortcut has none, so slot numbers do.
+        ConnectionNotes notes = NetworkManager.GetComponent<ConnectionNotes>();
         Stats.Clear();
         foreach (TagPlayer player in _players)
         {
-            // Names arrive with the lobby later; until then the slot number has to do.
+            string name;
+            if (notes == null || !notes.PlayerNames.TryGetValue(player.OwnerClientId, out name) || string.IsNullOrEmpty(name))
+            {
+                name = "Player " + (Stats.Count + 1);
+            }
+
             Stats.Add(new PlayerMatchStats
             {
                 ClientId = player.OwnerClientId,
-                Name = new FixedString64Bytes("Player " + (Stats.Count + 1)),
+                Name = new FixedString64Bytes(name),
             });
         }
 

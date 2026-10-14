@@ -122,3 +122,78 @@
     white-space: normal;
     -unity-text-align: middle-center;
 }
+
+/* Results screen: the menu card, wider, with a small stats table. */
+.results-card {
+    width: 820px;
+    padding-top: 30px;
+    padding-bottom: 36px;
+}
+
+.results-score {
+    margin-top: -6px;
+    margin-bottom: 18px;
+    font-size: 56px;
+    color: rgb(5, 58, 5);
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+}
+
+.results-row {
+    flex-direction: row;
+    width: 100%;
+    height: 52px;
+    align-items: center;
+    padding-left: 16px;
+    padding-right: 16px;
+    margin-bottom: 8px;
+    background-color: rgb(230, 240, 225);
+    border-width: 2px;
+    border-color: rgb(5, 58, 5);
+    border-radius: 10px;
+}
+
+.results-row--header {
+    height: 40px;
+    background-color: rgba(5, 58, 5, 0.15);
+}
+
+.results-cell {
+    flex-grow: 1;
+    flex-basis: 0;
+    font-size: 26px;
+    color: rgb(5, 58, 5);
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+}
+
+.results-cell--name {
+    flex-grow: 2;
+    -unity-text-align: middle-left;
+}
+
+.results-buttons {
+    flex-direction: row;
+    justify-content: center;
+    margin-top: 6px;
+}
+
+.button.results-button {
+    width: 300px;
+    height: 80px;
+    margin-top: 0;
+    margin-left: 10px;
+    margin-right: 10px;
+    font-size: 30px;
+}
+
+.button.results-leave {
+    width: 240px;
+    height: 60px;
+    margin-top: 18px;
+    font-size: 26px;
+}
+
+.button.hud-button:disabled {
+    opacity: 0.45;
+}

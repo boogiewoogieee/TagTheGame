@@ -63,6 +63,16 @@ public class MatchExit : MonoBehaviour
             return;
         }
 
+        // A client that did not choose to leave lost its host; the menu shows it why it is back.
+        if (!_leaving && !wasHost)
+        {
+            ConnectionNotes notes = _networkManager.GetComponent<ConnectionNotes>();
+            if (notes != null)
+            {
+                notes.LastDisconnectMessage = "Host left.";
+            }
+        }
+
         _leaving = true;
         SceneManager.LoadScene(menuScene);
     }
