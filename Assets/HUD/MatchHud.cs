@@ -14,9 +14,13 @@ public class MatchHud : MonoBehaviour
     [Tooltip("Fired when the player presses Leave to menu after the round is over.")]
     public UnityEvent onLeave;
 
+    [Tooltip("The in-game menu. The round-over screen hides while it is open, so their buttons never overlap.")]
+    public PauseMenu pauseMenu;
+
     private Label _timer;
     private Label _status;
     private Label _result;
+    private VisualElement _roundOver;
     private Button _leave;
     private int _shownSeconds = -1;
 
@@ -33,7 +37,8 @@ public class MatchHud : MonoBehaviour
         _timer = root.Q<Label>("Timer");
         _status = root.Q<Label>("Status");
         _result = root.Q<Label>("Result");
-        _leave = root.Q<Button>("Leave");
+        _roundOver = root.Q<VisualElement>("RoundOver");
+        _leave = _roundOver.Q<Button>("Leave");
         _leave.clicked += OnLeaveClicked;
         _shownSeconds = -1;
     }
@@ -63,8 +68,8 @@ public class MatchHud : MonoBehaviour
 
         SetVisible(_timer, inMatch && phase == MatchPhase.Playing);
         SetVisible(_status, inMatch && phase != MatchPhase.RoundOver);
-        SetVisible(_result, inMatch && phase == MatchPhase.RoundOver);
-        SetVisible(_leave, inMatch && phase == MatchPhase.RoundOver);
+        bool menuOpen = pauseMenu != null && pauseMenu.IsOpen;
+        SetVisible(_roundOver, inMatch && phase == MatchPhase.RoundOver && !menuOpen);
 
         if (!inMatch)
         {

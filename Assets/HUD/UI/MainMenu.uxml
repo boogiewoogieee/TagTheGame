@@ -1,5 +1,6 @@
 <ui:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
     <Style src="project://database/Assets/HUD/MainMenuStyle.uss?fileID=7433441132597879392&amp;guid=e4872d0e85f10ac4aaff57cc4b47be44&amp;type=3#MainMenuStyle"/>
+    <Style src="MenuLobby.uss"/>
     <ui:VisualElement name="Screen_Main" style="flex-grow: 1; background-image: url(&quot;project://database/Assets/HUD/UI/Images/wp9382134-landscape-illustration-wallpapers.jpg?fileID=2800000&amp;guid=b16f70ace1869f841844913c1986a132&amp;type=3#wp9382134-landscape-illustration-wallpapers&quot;); width: 1920px; height: 1080px; display: flex; position: absolute;">
         <ui:Label text="Tag The Game" class="header" style="align-self: center;"/>
         <ui:Button text="Multiplayer" name="Screen_Multiplayer" class="button"/>
@@ -9,7 +10,10 @@
     <ui:VisualElement name="Joining" style="flex-grow: 1; position: absolute; display: none; background-image: url(&quot;project://database/Assets/HUD/UI/Images/wp9382134-landscape-illustration-wallpapers.jpg?fileID=2800000&amp;guid=b16f70ace1869f841844913c1986a132&amp;type=3#wp9382134-landscape-illustration-wallpapers&quot;); width: 1920px; height: 1080px; top: auto; left: auto;">
         <ui:VisualElement name="Background" style="flex-grow: 1; position: absolute; width: 1000px; height: 600px; align-self: center; background-color: rgb(131, 202, 149); margin-top: 264px; margin-right: 264px; margin-bottom: 264px; margin-left: 264px; top: 0; left: 199px; display: flex; border-top-width: 0; border-right-width: 0; border-bottom-width: 0; border-left-width: 0; border-top-left-radius: 20px; border-top-right-radius: 20px; border-bottom-right-radius: 20px; border-bottom-left-radius: 20px;">
             <ui:Button text="X" name="X" style="position: absolute; border-top-left-radius: 10px; border-top-right-radius: 10px; border-bottom-right-radius: 10px; border-bottom-left-radius: 10px; border-top-width: 0; border-right-width: 0; border-bottom-width: 0; border-left-width: 0; background-color: rgb(233, 206, 118); font-size: 20px; -unity-font-style: bold; height: 45px; width: 38px; margin-top: 10px; margin-right: 5px; margin-left: 5px; display: flex; padding-top: 11px; padding-bottom: 10px; padding-right: 15px; padding-left: 11px;"/>
-            <ui:TextField label="Address" name="Address" value="127.0.0.1" style="-unity-font-style: bold; font-size: 30px; margin-top: 70px; margin-left: 10px; margin-right: 10px; margin-bottom: 5px;"/>
+            <ui:VisualElement name="JoinFields" class="join-fields">
+                <ui:TextField label="Name" name="PlayerName" max-length="16" class="join-field"/>
+                <ui:TextField label="Address" name="Address" value="127.0.0.1" class="join-field"/>
+            </ui:VisualElement>
             <ui:Button text="Host Lobby" name="Host" class="button" style="margin-top: 20px; width: 500px; height: 130px; font-size: 50px;"/>
             <ui:Button text="Join Lobby" name="Join" class="button" style="width: 500px; height: 130px; margin-top: 30px; font-size: 50px;"/>
             <ui:Label text="" name="JoinStatus" style="align-self: center; -unity-font-style: bold; font-size: 24px; margin-top: 15px; margin-left: 20px; margin-right: 20px; white-space: normal; -unity-text-align: upper-center;"/>
@@ -43,10 +47,23 @@
     <ui:VisualElement name="Lobby" style="flex-grow: 1; position: absolute; display: none; background-image: url(&quot;project://database/Assets/HUD/UI/Images/wp9382134-landscape-illustration-wallpapers.jpg?fileID=2800000&amp;guid=b16f70ace1869f841844913c1986a132&amp;type=3#wp9382134-landscape-illustration-wallpapers&quot;); width: 1920px; height: 1080px;">
         <ui:VisualElement name="Background" style="flex-grow: 1; position: absolute; width: 1000px; height: 600px; align-self: center; background-color: rgb(131, 202, 149); margin-top: 264px; margin-right: 264px; margin-bottom: 264px; margin-left: 264px; top: 0; left: 199px; border-top-left-radius: 20px; border-top-right-radius: 20px; border-bottom-right-radius: 20px; border-bottom-left-radius: 20px;">
             <ui:Button text="X" name="X" style="position: absolute; border-top-left-radius: 10px; border-top-right-radius: 10px; border-bottom-right-radius: 10px; border-bottom-left-radius: 10px; border-top-width: 0; border-right-width: 0; border-bottom-width: 0; border-left-width: 0; background-color: rgb(233, 206, 118); font-size: 20px; -unity-font-style: bold; height: 45px; width: 40px; margin-top: 10px; margin-right: 5px; margin-left: 5px; display: flex; padding-right: 15px; padding-left: 12px; align-content: auto; margin-bottom: 10px; padding-top: 11px;"/>
-            <ui:Label text="LOBBY" name="Lobby" style="margin-top: 70px; align-self: center; -unity-font-style: bold; font-size: 50px; margin-bottom: 25px;"/>
-            <ui:Label text="Waiting for a player to join..." name="LobbyStatus" style="align-self: center; -unity-font-style: bold; font-size: 30px; margin-left: 20px; margin-right: 20px; margin-bottom: 30px; white-space: normal; -unity-text-align: upper-center;"/>
-            <ui:Button text="Start match" name="StartMatch" class="button" style="width: 500px; height: 110px; font-size: 45px; display: none;"/>
-            <ui:Button text="Leave" name="Leave" class="button" style="width: 300px; height: 70px; margin-top: 20px; font-size: 30px;"/>
+            <ui:Label text="LOBBY" name="Lobby" style="margin-top: 50px; align-self: center; -unity-font-style: bold; font-size: 50px; margin-bottom: 15px;"/>
+            <ui:VisualElement name="Slots" class="lobby-slots">
+                <ui:VisualElement name="Slot1" class="lobby-slot">
+                    <ui:Label text="Player 1" name="Slot1Name" class="lobby-slot-name"/>
+                    <ui:Label text="Not ready" name="Slot1State" class="lobby-slot-state lobby-state--not-ready"/>
+                </ui:VisualElement>
+                <ui:VisualElement name="Slot2" class="lobby-slot lobby-slot--empty">
+                    <ui:Label text="Waiting for a player..." name="Slot2Name" class="lobby-slot-name"/>
+                    <ui:Label text="" name="Slot2State" class="lobby-slot-state"/>
+                </ui:VisualElement>
+            </ui:VisualElement>
+            <ui:Label text="Waiting for a player to join..." name="LobbyStatus" class="lobby-status"/>
+            <ui:VisualElement name="LobbyButtons" class="lobby-buttons">
+                <ui:Button text="Ready" name="Ready" class="button lobby-button"/>
+                <ui:Button text="Start match" name="StartMatch" class="button lobby-button" style="display: none;"/>
+            </ui:VisualElement>
+            <ui:Button text="Leave" name="Leave" class="button lobby-leave"/>
         </ui:VisualElement>
     </ui:VisualElement>
     <ui:VisualElement name="PopUp" style="flex-grow: 1; position: absolute; display: none; background-image: none; width: 1920px; height: 1080px;">

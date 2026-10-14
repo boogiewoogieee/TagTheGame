@@ -32,6 +32,11 @@ public class TagPlayer : NetworkBehaviour
     private MatchManager _match;
     private AudioListener _cameraListener;
 
+    // Two things can freeze the player: the match (round over) and the in-game menu.
+    // Input only comes back when neither of them is holding it.
+    private bool _matchAllowsInput = true;
+    private bool _menuOpen;
+
     public override void OnNetworkSpawn()
     {
         _playerInput = GetComponent<PlayerInput>();
@@ -51,6 +56,10 @@ public class TagPlayer : NetworkBehaviour
             // On a copy whose Start never ran those handlers would throw, so the script is
             // removed here; the empty receivers at the bottom handle the events instead.
             Destroy(_controller);
+
+            // Unity tells disabled scripts too when the window regains focus, and this one
+            // would then lock the mouse, trapping it on the round-over screen and the menu.
+            Destroy(_inputs);
         }
 
         _match = FindAnyObjectByType<MatchManager>(FindObjectsInactive.Include);
@@ -85,10 +94,25 @@ public class TagPlayer : NetworkBehaviour
         }
     }
 
-    // Freezes or releases this player on the machine that owns it. The controller keeps
-    // running, so gravity and the idle animation still work while frozen.
+    // Called by the match every frame: false while the round is over.
     public void SetInputEnabled(bool inputEnabled)
     {
+        _matchAllowsInput = inputEnabled;
+        ApplyInputState();
+    }
+
+    // Called by the in-game menu when it opens or closes.
+    public void SetMenuOpen(bool menuOpen)
+    {
+        _menuOpen = menuOpen;
+        ApplyInputState();
+    }
+
+    // Freezes or releases this player on the machine that owns it. The controller keeps
+    // running, so gravity and the idle animation still work while frozen.
+    private void ApplyInputState()
+    {
+        bool inputEnabled = _matchAllowsInput && !_menuOpen;
         if (!IsOwner || _playerInput.enabled == inputEnabled)
         {
             return;

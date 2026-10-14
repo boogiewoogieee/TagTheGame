@@ -28,8 +28,6 @@
 }
 
 .hud-result {
-    position: absolute;
-    top: 20%;
     font-size: 140px;
     color: rgb(255, 255, 255);
     -unity-font-style: bold;
@@ -46,16 +44,61 @@
     color: rgb(255, 96, 64);
 }
 
-.hud-leave {
+/* Full-screen layers on top of the HUD; each one centres its content horizontally. */
+.hud-overlay {
     position: absolute;
-    top: 55%;
-    width: 360px;
-    height: 80px;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    align-items: center;
+}
+
+/* Result and its buttons sit in the upper part of the screen, leaving the players visible. */
+.hud-round-over {
+    justify-content: flex-start;
+    padding-top: 110px;
+}
+
+/* Same look as the main menu's buttons (.button in MainMenuStyle.uss), sized for the HUD. */
+.button.hud-button {
+    width: 420px;
+    height: 90px;
+    margin-top: 30px;
     font-size: 36px;
-    color: rgb(255, 255, 255);
-    background-color: rgba(0, 0, 0, 0.6);
-    border-width: 2px;
-    border-color: rgb(255, 255, 255);
-    border-radius: 12px;
+}
+
+.hud-menu-backdrop {
+    justify-content: center;
+    background-color: rgba(0, 0, 0, 0.7);
+}
+
+/* The main menu's green panel, so the in-game menu reads as part of the same game. */
+.hud-menu-card {
+    width: 620px;
+    padding-top: 40px;
+    padding-bottom: 50px;
+    padding-left: 40px;
+    padding-right: 40px;
+    align-items: center;
+    background-color: rgb(131, 202, 149);
+    border-width: 4px;
+    border-color: rgb(5, 58, 5);
+    border-radius: 20px;
+}
+
+.hud-menu-title {
+    font-size: 64px;
+    color: rgb(5, 58, 5);
     -unity-font-style: bold;
+    -unity-text-align: middle-center;
+}
+
+.hud-menu-hint {
+    margin-top: 6px;
+    margin-bottom: 10px;
+    font-size: 24px;
+    color: rgb(5, 58, 5);
+    white-space: normal;
+    -unity-text-align: middle-center;
 }

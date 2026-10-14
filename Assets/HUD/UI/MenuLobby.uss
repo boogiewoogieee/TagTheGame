@@ -1,0 +1,102 @@
+/* Additions to RoniToni's menu for networking: the name and address fields on the
+   Joining screen and the player slots and buttons on the Lobby screen. Colours come
+   from MainMenuStyle.uss so the additions match her screens. */
+
+.join-fields {
+    flex-direction: row;
+    margin-top: 70px;
+    margin-left: 10px;
+    margin-right: 10px;
+    margin-bottom: 5px;
+}
+
+.join-field {
+    flex-grow: 1;
+    flex-basis: 0;
+    margin-left: 5px;
+    margin-right: 5px;
+    font-size: 30px;
+    -unity-font-style: bold;
+}
+
+.lobby-slots {
+    width: 760px;
+    align-self: center;
+}
+
+.lobby-slot {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    height: 60px;
+    margin-bottom: 10px;
+    padding-left: 20px;
+    padding-right: 20px;
+    background-color: rgb(230, 240, 225);
+    border-width: 2px;
+    border-color: rgb(5, 58, 5);
+    border-radius: 10px;
+}
+
+.lobby-slot-name {
+    font-size: 30px;
+    color: rgb(5, 58, 5);
+    -unity-font-style: bold;
+}
+
+.lobby-slot-state {
+    font-size: 26px;
+    -unity-font-style: bold;
+}
+
+.lobby-slot--empty .lobby-slot-name {
+    color: rgb(110, 135, 110);
+    -unity-font-style: italic;
+}
+
+.lobby-state--ready {
+    color: rgb(20, 120, 40);
+}
+
+.lobby-state--not-ready {
+    color: rgb(170, 60, 20);
+}
+
+.lobby-status {
+    align-self: center;
+    margin-top: 5px;
+    margin-bottom: 15px;
+    margin-left: 20px;
+    margin-right: 20px;
+    font-size: 24px;
+    color: rgb(5, 58, 5);
+    -unity-font-style: bold;
+    white-space: normal;
+    -unity-text-align: upper-center;
+}
+
+.lobby-buttons {
+    flex-direction: row;
+    justify-content: center;
+}
+
+.button.lobby-button {
+    width: 300px;
+    height: 90px;
+    margin-top: 0;
+    margin-left: 15px;
+    margin-right: 15px;
+    font-size: 34px;
+}
+
+.button.lobby-leave {
+    width: 260px;
+    height: 60px;
+    margin-top: 20px;
+    font-size: 28px;
+}
+
+/* Start match stays visible for the host but faded until both players are ready. */
+.button.lobby-button:disabled {
+    opacity: 0.45;
+}

@@ -4382,6 +4382,7 @@ GameObject:
   - component: {fileID: 537730879}
   - component: {fileID: 537730878}
   - component: {fileID: 537730881}
+  - component: {fileID: 537730882}
   m_Layer: 0
   m_Name: MatchHud
   m_TagString: Untagged
@@ -4417,6 +4418,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+  pauseMenu: {fileID: 537730882}
 --- !u!114 &537730879
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4468,6 +4470,33 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MatchExit
   menuScene: MainMenu
+--- !u!114 &537730882
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 537730877}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 20109c5d35a1ffa4f8d8f4eb6303439e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PauseMenu
+  onLeave:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 537730881}
+        m_TargetAssemblyTypeName: MatchExit, Assembly-CSharp
+        m_MethodName: LeaveToMenu
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: 
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1001 &537751899
 PrefabInstance:
   m_ObjectHideFlags: 0
