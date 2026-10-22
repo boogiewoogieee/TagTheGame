@@ -410,6 +410,7 @@ public class MatchManager : NetworkBehaviour
             {
                 _shownDetonateAt = DetonateAtServerTime.Value;
                 _shownHolder = NoHolder;
+                ResetBlastReactions();
             }
 
             if (BombHolderId.Value != _shownHolder)
@@ -429,7 +430,9 @@ public class MatchManager : NetworkBehaviour
             // A round that ended by detonation keeps its holder; a forfeit clears it, so no explosion.
             if (BombHolderId.Value != NoHolder && bomb.IsAttached)
             {
+                Vector3 blastOrigin = bomb.transform.position;
                 bomb.Explode();
+                ThrowPlayers(blastOrigin, BombHolderId.Value);
             }
             else
             {
@@ -504,6 +507,31 @@ public class MatchManager : NetworkBehaviour
         BombHolderId.Value = targetClientId;
         _shownHolder = targetClientId;
         _holderSince = now;
+    }
+
+    // Every machine throws its own copies of the players; only the owner's copy really moves.
+    private void ThrowPlayers(Vector3 origin, ulong holderId)
+    {
+        foreach (TagPlayer player in _players)
+        {
+            BlastReaction reaction = player.GetComponent<BlastReaction>();
+            if (reaction != null)
+            {
+                reaction.Launch(origin, player.OwnerClientId == holderId, player.IsOwner);
+            }
+        }
+    }
+
+    private void ResetBlastReactions()
+    {
+        foreach (TagPlayer player in _players)
+        {
+            BlastReaction reaction = player.GetComponent<BlastReaction>();
+            if (reaction != null)
+            {
+                reaction.Reset();
+            }
+        }
     }
 
     private TagPlayer FindPlayer(ulong clientId)

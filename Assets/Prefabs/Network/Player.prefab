@@ -91,6 +91,7 @@ GameObject:
   - component: {fileID: 2145253920456902084}
   - component: {fileID: 6822237261715428148}
   - component: {fileID: 8881281506654714864}
+  - component: {fileID: 9215615115460046628}
   m_Layer: 8
   m_Name: Player
   m_TagString: Player
@@ -470,6 +471,27 @@ MonoBehaviour:
   listener: {fileID: 2691534226484060402}
   bombLocalPosition: {x: 0.005712614, y: -0, z: -0.23498353}
   bombLocalEulerAngles: {x: 0.063504815, y: 179.69885, z: -0.00033379075}
+--- !u!114 &9215615115460046628
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4063383498082916017}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2b20f94905033b1438f25f04ad522c29, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BlastReaction
+  modelRoot: {fileID: 4609180196245963068}
+  launchSpeed: 9
+  pushSpeed: 3
+  gravity: -22
+  tumbleSeconds: 1.1
+  spinSpeed: 540
+  recoverSeconds: 0.4
+  nearbyRadius: 4
+  nearbyStrength: 0.5
 --- !u!1001 &6237085053381034657
 PrefabInstance:
   m_ObjectHideFlags: 0
