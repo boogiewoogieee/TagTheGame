@@ -38,7 +38,9 @@ public static class AuthProfileRules
         StringBuilder result = new StringBuilder(Math.Min(raw.Length, MaxLength));
         foreach (char character in raw)
         {
-            if (char.IsLetterOrDigit(character) || character == '-' || character == '_')
+            // The sign-in service accepts only ASCII letters and digits; "ł" or "é" would make sign-in throw.
+            if ((character >= 'a' && character <= 'z') || (character >= 'A' && character <= 'Z')
+                || (character >= '0' && character <= '9') || character == '-' || character == '_')
             {
                 result.Append(character);
                 if (result.Length == MaxLength)

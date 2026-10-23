@@ -40,9 +40,9 @@ public class AuthProfileRulesTests
     }
 
     [Test]
-    public void Sanitize_KeepsPolishLetters()
+    public void Sanitize_DropsLettersTheSignInServiceRejects()
     {
-        Assert.AreEqual("Zażółć_gęślą", AuthProfileRules.Sanitize("Zażółć_gęślą"));
+        Assert.AreEqual("Za_gl", AuthProfileRules.Sanitize("Zażółć_gęślą"));
     }
 
     [Test]
