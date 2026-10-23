@@ -19,6 +19,8 @@ public class LobbyPanel : MonoBehaviour
     private readonly Label[] _slotNames = new Label[SlotCount];
     private readonly Label[] _slotStates = new Label[SlotCount];
     private Label _status;
+    private Label _title;
+    private SessionService _sessions;
     private Button _ready;
     private Button _start;
 
@@ -33,6 +35,7 @@ public class LobbyPanel : MonoBehaviour
         }
 
         _status = screen.Q<Label>("LobbyStatus");
+        _title = screen.Q<Label>("Lobby");
         _ready = screen.Q<Button>("Ready");
         _start = screen.Q<Button>("StartMatch");
         _ready.clicked += OnReadyClicked;
@@ -59,6 +62,15 @@ public class LobbyPanel : MonoBehaviour
             return;
         }
 
+        // An online game shows its listed name; a direct LAN game keeps the plain title.
+        if (_sessions == null)
+        {
+            _sessions = lobby.NetworkManager.GetComponent<SessionService>();
+        }
+
+        bool online = _sessions != null && _sessions.InOnlineGame;
+        _title.text = online ? _sessions.CurrentGameName : "LOBBY";
+
         ulong localId = lobby.NetworkManager.LocalClientId;
         for (int i = 0; i < SlotCount; i++)
         {
@@ -77,13 +89,18 @@ public class LobbyPanel : MonoBehaviour
         _ready.text = lobby.LocalIsReady ? "Not ready" : "Ready";
         _start.style.display = isHost ? DisplayStyle.Flex : DisplayStyle.None;
         _start.SetEnabled(lobby.CanStart);
-        _status.text = StatusText(isHost);
+        _status.text = StatusText(isHost, online);
     }
 
-    private string StatusText(bool isHost)
+    private string StatusText(bool isHost, bool online)
     {
         if (lobby.Players.Count < lobby.requiredPlayers)
         {
+            if (isHost && online)
+            {
+                return "Waiting for a player to join...\nYour game is in the list of open games.";
+            }
+
             if (isHost && network != null)
             {
                 return "Waiting for a player to join...\nYour address: " + network.LocalAddress + ", port " + network.port;

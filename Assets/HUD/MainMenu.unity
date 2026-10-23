@@ -520,6 +520,7 @@ GameObject:
   - component: {fileID: 1451601781}
   - component: {fileID: 1451601782}
   - component: {fileID: 1451601783}
+  - component: {fileID: 1451601784}
   m_Layer: 5
   m_Name: MainMenu
   m_TagString: Untagged
@@ -665,6 +666,20 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::LobbyPanel
   lobby: {fileID: 897496497}
   network: {fileID: 1451601782}
+--- !u!114 &1451601784
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1451601778}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d12d149ce9a826348a7d8e54fbc7fa14, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameListPanel
+  network: {fileID: 1451601782}
+  autoRefreshSeconds: 5
 --- !u!1 &1935027720
 GameObject:
   m_ObjectHideFlags: 0
