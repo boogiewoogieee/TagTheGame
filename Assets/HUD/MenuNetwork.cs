@@ -20,9 +20,6 @@ public class MenuNetwork : MonoBehaviour
     [Min(1)]
     public int connectAttempts = 5;
 
-    [Tooltip("The lobby state in this scene. It gets this player's name before hosting or joining.")]
-    public LobbyManager lobby;
-
     [Tooltip("Fired on the host once it is listening; the menu shows the lobby.")]
     public UnityEvent onHosted;
 
@@ -31,6 +28,9 @@ public class MenuNetwork : MonoBehaviour
 
     [Tooltip("Fired when this machine leaves or loses the game; the menu goes back to the joining screen.")]
     public UnityEvent onDisconnected;
+
+    [Tooltip("Fired when the menu opens with the game still running, after Return to lobby; the menu shows the lobby.")]
+    public UnityEvent onReturnedToLobby;
 
     private const string AddressPrefsKey = "TagTheGame.JoinAddress";
     private const string NamePrefsKey = "TagTheGame.PlayerName";
@@ -90,6 +90,31 @@ public class MenuNetwork : MonoBehaviour
 
         LocalAddress = FindLocalAddress();
         ShowIdle("");
+    }
+
+    // Runs after every OnEnable in the scene, so MenuController has opened its main screen
+    // and this can move on from it.
+    private void Start()
+    {
+        if (_networkManager == null)
+        {
+            return;
+        }
+
+        if (_networkManager.IsListening)
+        {
+            // The host brought everyone back from the arena; the lobby is already filling up.
+            onReturnedToLobby.Invoke();
+            return;
+        }
+
+        ConnectionNotes notes = _networkManager.GetComponent<ConnectionNotes>();
+        if (notes != null && !string.IsNullOrEmpty(notes.LastDisconnectMessage))
+        {
+            ShowIdle(notes.LastDisconnectMessage);
+            notes.LastDisconnectMessage = "";
+            onDisconnected.Invoke();
+        }
     }
 
     private void OnDisable()
@@ -245,9 +270,10 @@ public class MenuNetwork : MonoBehaviour
         string name = LobbyRules.CleanName(_nameField.value, "");
         _nameField.value = name;
         PlayerPrefs.SetString(NamePrefsKey, name);
-        if (lobby != null)
+        ConnectionNotes notes = _networkManager.GetComponent<ConnectionNotes>();
+        if (notes != null)
         {
-            lobby.localPlayerName = name;
+            notes.LocalPlayerName = name;
         }
     }
 

@@ -1,13 +1,11 @@
 using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
 using UnityEngine;
-using UnityEngine.InputSystem;
 using UnityEngine.UIElements;
 
-// Development-only panel for testing on one PC: start a host, join it as a client, and
-// restart the round as host. For now the NetworkManager and its transport sit in
-// Arena_01. They move to a Bootstrap scene once the menu and lobby exist, and this
-// panel is deleted then.
+// Development-only panel for starting the arena on its own in the Editor: start a host
+// or join one as a client without going through the menu. The NetworkManager comes from
+// the NetworkManagerSpawner in the scene.
 [RequireComponent(typeof(UIDocument))]
 public class DevNetworkPanel : MonoBehaviour
 {
@@ -17,14 +15,10 @@ public class DevNetworkPanel : MonoBehaviour
     [Tooltip("Port used by both Host and Client.")]
     public ushort port = 7777;
 
-    [Tooltip("The match the Restart round button restarts.")]
-    public MatchManager match;
-
     private VisualElement _panel;
     private Label _status;
     private Button _hostButton;
     private Button _clientButton;
-    private Button _restartButton;
 
     private void OnEnable()
     {
@@ -52,12 +46,10 @@ public class DevNetworkPanel : MonoBehaviour
 
         _hostButton = CreateButton("Host", StartHost);
         _clientButton = CreateButton("Client", StartClient);
-        _restartButton = CreateButton("Restart round (F5)", RestartRound);
 
         _panel.Add(_status);
         _panel.Add(_hostButton);
         _panel.Add(_clientButton);
-        _panel.Add(_restartButton);
         GetComponent<UIDocument>().rootVisualElement.Add(_panel);
     }
 
@@ -83,19 +75,6 @@ public class DevNetworkPanel : MonoBehaviour
         _hostButton.style.display = connectDisplay;
         _clientButton.style.display = connectDisplay;
         _status.text = DescribeState(networkManager);
-
-        // Only the host decides when a round restarts.
-        bool isHost = !offline && networkManager.IsHost && match != null;
-        _restartButton.style.display = isHost ? DisplayStyle.Flex : DisplayStyle.None;
-        bool canRestart = isHost && match.CanRestart;
-        _restartButton.SetEnabled(canRestart);
-        _restartButton.style.opacity = canRestart ? 1f : 0.4f;
-
-        // The cursor is locked while playing, so the button also has a key.
-        if (isHost && Keyboard.current != null && Keyboard.current.f5Key.wasPressedThisFrame)
-        {
-            RestartRound();
-        }
     }
 
     private static Button CreateButton(string text, System.Action onClick)
@@ -151,14 +130,6 @@ public class DevNetworkPanel : MonoBehaviour
         if (networkManager != null)
         {
             networkManager.StartClient();
-        }
-    }
-
-    private void RestartRound()
-    {
-        if (match != null)
-        {
-            match.RestartRound();
         }
     }
 

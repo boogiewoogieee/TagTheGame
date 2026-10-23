@@ -16,9 +16,6 @@ public class LobbyManager : NetworkBehaviour
     [Min(1)]
     public int requiredPlayers = 2;
 
-    [Tooltip("Name this machine registers with. The menu sets it before hosting or joining.")]
-    public string localPlayerName = "";
-
     public NetworkList<LobbyPlayer> Players = new NetworkList<LobbyPlayer>();
 
     public int ReadyCount
@@ -45,14 +42,27 @@ public class LobbyManager : NetworkBehaviour
 
     public override void OnNetworkSpawn()
     {
+        // The name was typed in the menu and kept on the NetworkManager, so it is still here
+        // when the lobby comes back after a match.
+        ConnectionNotes notes = NetworkManager.GetComponent<ConnectionNotes>();
+        FixedString64Bytes name = new FixedString64Bytes(notes != null ? notes.LocalPlayerName : "");
+
         if (IsServer)
         {
             NetworkManager.OnConnectionEvent += OnConnectionEvent;
-            AddPlayer(NetworkManager.ServerClientId, new FixedString64Bytes(localPlayerName));
+
+            // A lobby that is open again takes players again (the match locked it).
+            ConnectionGate gate = NetworkManager.GetComponent<ConnectionGate>();
+            if (gate != null)
+            {
+                gate.AcceptingPlayers = true;
+            }
+
+            AddPlayer(NetworkManager.ServerClientId, name);
         }
         else
         {
-            JoinLobbyRpc(new FixedString64Bytes(localPlayerName));
+            JoinLobbyRpc(name);
         }
     }
 
@@ -89,6 +99,18 @@ public class LobbyManager : NetworkBehaviour
         }
 
         LockJoining();
+
+        // The lobby is unloaded with this scene, so the arena gets the names through the NetworkManager.
+        ConnectionNotes notes = NetworkManager.GetComponent<ConnectionNotes>();
+        if (notes != null)
+        {
+            notes.PlayerNames.Clear();
+            foreach (LobbyPlayer player in Players)
+            {
+                notes.PlayerNames[player.ClientId] = player.Name.ToString();
+            }
+        }
+
         NetworkManager.SceneManager.LoadScene(arenaScene, LoadSceneMode.Single);
     }
 

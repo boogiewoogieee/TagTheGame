@@ -1,11 +1,14 @@
 using System.Collections.Generic;
+using Unity.Collections;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
-// Runs the bomb-tag round. The host makes every decision (who holds the bomb, when it
-// explodes, which phase the match is in) and writes it into three network variables.
-// Every machine, the host included, then shows that state locally: where the bomb sits,
-// the explosion, and whether its own player may move.
+// Runs the bomb-tag match: a series of rounds until one player has enough round wins.
+// The host makes every decision (who holds the bomb, when it explodes, which phase the
+// match is in, the score) and writes it into network variables. Every machine, the host
+// included, then shows that state locally: where the bomb sits, the explosion, and
+// whether its own player may move.
 public class MatchManager : NetworkBehaviour
 {
     public const ulong NoHolder = ulong.MaxValue;
@@ -13,18 +16,32 @@ public class MatchManager : NetworkBehaviour
     // How often the machine of the holder may ask the host for a pass while in range.
     private const double PassRequestInterval = 0.2;
 
-    [Tooltip("Tunable rules: fuse length, pass range, cooldown.")]
+    [Tooltip("Tunable rules: fuse length, pass range, cooldown, rounds to win.")]
     public GameRules rules;
 
     [Tooltip("The bomb in the scene. It is not networked; each machine moves its own copy.")]
     public BombFuse bomb;
 
-    [Tooltip("Used to send players back to their spawn points when a round restarts.")]
+    [Tooltip("Used to send players back to their spawn points between rounds.")]
     public PlayerSpawner spawner;
+
+    [Tooltip("Scene the host loads for everyone on Return to lobby.")]
+    public string menuScene = "MainMenu";
 
     public NetworkVariable<ulong> BombHolderId = new NetworkVariable<ulong>(NoHolder);
     public NetworkVariable<double> DetonateAtServerTime = new NetworkVariable<double>();
     public NetworkVariable<MatchPhase> Phase = new NetworkVariable<MatchPhase>(MatchPhase.WaitingForPlayers);
+
+    // Between rounds: when the next round starts and who lost the last one.
+    public NetworkVariable<double> NextRoundAtServerTime = new NetworkVariable<double>();
+    public NetworkVariable<ulong> LastRoundLoserId = new NetworkVariable<ulong>(NoHolder);
+
+    // Match over: the winner, and whether it was decided by the opponent leaving.
+    public NetworkVariable<ulong> WinnerId = new NetworkVariable<ulong>(NoHolder);
+    public NetworkVariable<bool> OpponentLeft = new NetworkVariable<bool>(false);
+
+    // One entry per player for the whole match; written only by the host.
+    public NetworkList<PlayerMatchStats> Stats = new NetworkList<PlayerMatchStats>();
 
     private readonly List<TagPlayer> _players = new List<TagPlayer>();
 
@@ -51,10 +68,47 @@ public class MatchManager : NetworkBehaviour
         }
     }
 
+    public float SecondsToNextRound
+    {
+        get
+        {
+            if (!IsSpawned || Phase.Value != MatchPhase.RoundOver)
+            {
+                return 0f;
+            }
+
+            return Mathf.Max(0f, (float)(NextRoundAtServerTime.Value - NetworkManager.ServerTime.Time));
+        }
+    }
+
     public bool LocalPlayerHasBomb => IsSpawned && BombHolderId.Value == NetworkManager.LocalClientId;
 
-    // True on the host while two players are in, which is when a round can be restarted.
-    public bool CanRestart => IsSpawned && IsServer && _players.Count >= 2;
+    public int LocalRoundsWon => RoundsWonOf(NetworkManager.LocalClientId);
+
+    public int OpponentRoundsWon
+    {
+        get
+        {
+            int rounds = 0;
+            foreach (PlayerMatchStats stats in Stats)
+            {
+                if (stats.ClientId != NetworkManager.LocalClientId)
+                {
+                    rounds += stats.RoundsWon;
+                }
+            }
+
+            return rounds;
+        }
+    }
+
+    // True on the host at the results screen while both players are still here.
+    public bool CanPlayAgain => IsSpawned && IsServer && Phase.Value == MatchPhase.MatchOver && _players.Count >= 2 && !OpponentLeft.Value;
+
+    public bool CanReturnToLobby => IsSpawned && IsServer && Phase.Value == MatchPhase.MatchOver;
+
+    // Only once a second arena exists and is named in the rules.
+    public bool CanGoToNextLevel => CanPlayAgain && rules != null && !string.IsNullOrEmpty(rules.nextArenaScene);
 
     // Netcode only lets the host look up the objects of other players, so players sign in
     // here when they spawn. That gives every machine the same list.
@@ -77,23 +131,40 @@ public class MatchManager : NetworkBehaviour
         }
     }
 
-    // Host only. Sends both players back to their spawn points and starts a fresh round.
-    public void RestartRound()
+    // Host only. A fresh match in the same arena: scores cleared, players back at their
+    // spawn points, new round.
+    public void PlayAgain()
     {
-        if (!CanRestart)
+        if (!CanPlayAgain)
         {
             return;
         }
 
-        foreach (TagPlayer player in _players)
+        SendPlayersToSpawn();
+        StartMatch();
+    }
+
+    // Host only. Keeps the connection and takes both players back to the lobby scene, where
+    // the lobby reopens for joining and everyone starts not ready.
+    public void ReturnToLobby()
+    {
+        if (!CanReturnToLobby)
         {
-            if (spawner != null && spawner.TryGetSpawnPose(player.OwnerClientId, out Vector3 position, out Quaternion rotation))
-            {
-                player.ReturnToSpawnRpc(position, rotation);
-            }
+            return;
         }
 
-        StartRound();
+        NetworkManager.SceneManager.LoadScene(menuScene, LoadSceneMode.Single);
+    }
+
+    // Host only. Loads the next arena for everyone; a fresh match starts there.
+    public void GoToNextLevel()
+    {
+        if (!CanGoToNextLevel)
+        {
+            return;
+        }
+
+        NetworkManager.SceneManager.LoadScene(rules.nextArenaScene, LoadSceneMode.Single);
     }
 
     public override void OnNetworkDespawn()
@@ -126,25 +197,86 @@ public class MatchManager : NetworkBehaviour
 
     private void RunHostLogic()
     {
+        double now = NetworkManager.ServerTime.Time;
+
         if (_players.Count < 2)
         {
-            if (Phase.Value != MatchPhase.WaitingForPlayers)
+            if (Phase.Value == MatchPhase.Playing || Phase.Value == MatchPhase.RoundOver)
+            {
+                EndByForfeit();
+            }
+            else if (Phase.Value == MatchPhase.MatchOver && !OpponentLeft.Value)
+            {
+                // The match was decided, but a results screen for one is still "opponent left".
+                OpponentLeft.Value = true;
+            }
+
+            if (Phase.Value == MatchPhase.WaitingForPlayers)
             {
                 BombHolderId.Value = NoHolder;
-                Phase.Value = MatchPhase.WaitingForPlayers;
             }
 
             return;
         }
 
-        if (Phase.Value == MatchPhase.WaitingForPlayers)
+        switch (Phase.Value)
         {
-            StartRound();
+            case MatchPhase.WaitingForPlayers:
+                StartMatch();
+                break;
+
+            case MatchPhase.Playing:
+                if (now >= DetonateAtServerTime.Value)
+                {
+                    EndRound();
+                }
+
+                break;
+
+            case MatchPhase.RoundOver:
+                if (now >= NextRoundAtServerTime.Value)
+                {
+                    SendPlayersToSpawn();
+                    StartRound();
+                }
+
+                break;
+
+            case MatchPhase.MatchOver:
+                // A new opponent in the Editor shortcut makes Play again possible again.
+                if (OpponentLeft.Value)
+                {
+                    OpponentLeft.Value = false;
+                }
+
+                break;
         }
-        else if (Phase.Value == MatchPhase.Playing && NetworkManager.ServerTime.Time >= DetonateAtServerTime.Value)
+    }
+
+    private void StartMatch()
+    {
+        // The lobby left the names on the NetworkManager; the Editor shortcut has none, so slot numbers do.
+        ConnectionNotes notes = NetworkManager.GetComponent<ConnectionNotes>();
+        Stats.Clear();
+        foreach (TagPlayer player in _players)
         {
-            Phase.Value = MatchPhase.RoundOver;
+            string name;
+            if (notes == null || !notes.PlayerNames.TryGetValue(player.OwnerClientId, out name) || string.IsNullOrEmpty(name))
+            {
+                name = "Player " + (Stats.Count + 1);
+            }
+
+            Stats.Add(new PlayerMatchStats
+            {
+                ClientId = player.OwnerClientId,
+                Name = new FixedString64Bytes(name),
+            });
         }
+
+        WinnerId.Value = NoHolder;
+        OpponentLeft.Value = false;
+        LastRoundLoserId.Value = NoHolder;
+        StartRound();
     }
 
     private void StartRound()
@@ -153,6 +285,115 @@ public class MatchManager : NetworkBehaviour
         BombHolderId.Value = holder.OwnerClientId;
         DetonateAtServerTime.Value = NetworkManager.ServerTime.Time + rules.fuseSeconds;
         Phase.Value = MatchPhase.Playing;
+    }
+
+    // The bomb went off: whoever holds it loses the round, the other player scores.
+    private void EndRound()
+    {
+        double now = NetworkManager.ServerTime.Time;
+        ulong loser = BombHolderId.Value;
+        AddHoldTime(loser, (float)(now - _holderSince));
+
+        for (int i = 0; i < Stats.Count; i++)
+        {
+            if (Stats[i].ClientId != loser)
+            {
+                PlayerMatchStats stats = Stats[i];
+                stats.RoundsWon++;
+                Stats[i] = stats;
+            }
+        }
+
+        LastRoundLoserId.Value = loser;
+
+        // The deciding round goes straight to the results; the countdown is for rounds still to come.
+        ulong winner = MatchRules.WinnerOf(SnapshotStats(), rules.roundsToWin);
+        if (winner != MatchRules.NoWinner)
+        {
+            WinnerId.Value = winner;
+            Phase.Value = MatchPhase.MatchOver;
+            return;
+        }
+
+        NextRoundAtServerTime.Value = now + rules.betweenRoundsSeconds;
+        Phase.Value = MatchPhase.RoundOver;
+    }
+
+    // The opponent left in the middle of the match: the player still here wins.
+    private void EndByForfeit()
+    {
+        if (Phase.Value == MatchPhase.Playing && BombHolderId.Value != NoHolder)
+        {
+            AddHoldTime(BombHolderId.Value, (float)(NetworkManager.ServerTime.Time - _holderSince));
+        }
+
+        WinnerId.Value = _players.Count > 0 ? _players[0].OwnerClientId : NoHolder;
+        OpponentLeft.Value = true;
+        BombHolderId.Value = NoHolder;
+        Phase.Value = MatchPhase.MatchOver;
+    }
+
+    private void SendPlayersToSpawn()
+    {
+        foreach (TagPlayer player in _players)
+        {
+            if (spawner != null && spawner.TryGetSpawnPose(player.OwnerClientId, out Vector3 position, out Quaternion rotation))
+            {
+                player.ReturnToSpawnRpc(position, rotation);
+            }
+        }
+    }
+
+    private List<PlayerMatchStats> SnapshotStats()
+    {
+        List<PlayerMatchStats> snapshot = new List<PlayerMatchStats>(Stats.Count);
+        foreach (PlayerMatchStats stats in Stats)
+        {
+            snapshot.Add(stats);
+        }
+
+        return snapshot;
+    }
+
+    private int RoundsWonOf(ulong clientId)
+    {
+        int index = IndexOfStats(clientId);
+        return index >= 0 ? Stats[index].RoundsWon : 0;
+    }
+
+    private int IndexOfStats(ulong clientId)
+    {
+        for (int i = 0; i < Stats.Count; i++)
+        {
+            if (Stats[i].ClientId == clientId)
+            {
+                return i;
+            }
+        }
+
+        return -1;
+    }
+
+    private void AddHoldTime(ulong clientId, float seconds)
+    {
+        int index = IndexOfStats(clientId);
+        if (index >= 0 && seconds > 0f)
+        {
+            PlayerMatchStats stats = Stats[index];
+            stats.SecondsHoldingBomb += seconds;
+            Stats[index] = stats;
+        }
+    }
+
+    private void AddPass(ulong clientId)
+    {
+        int index = IndexOfStats(clientId);
+        if (index >= 0)
+        {
+            PlayerMatchStats stats = Stats[index];
+            stats.Passes++;
+            Stats[index] = stats;
+        }
     }
 
     // Compares the network variables with what this machine last showed and catches up.
@@ -169,6 +410,7 @@ public class MatchManager : NetworkBehaviour
             {
                 _shownDetonateAt = DetonateAtServerTime.Value;
                 _shownHolder = NoHolder;
+                ResetBlastReactions();
             }
 
             if (BombHolderId.Value != _shownHolder)
@@ -185,9 +427,12 @@ public class MatchManager : NetworkBehaviour
         }
         else if (_shownPhase == MatchPhase.Playing)
         {
-            if (phase == MatchPhase.RoundOver && bomb.IsAttached)
+            // A round that ended by detonation keeps its holder; a forfeit clears it, so no explosion.
+            if (BombHolderId.Value != NoHolder && bomb.IsAttached)
             {
+                Vector3 blastOrigin = bomb.transform.position;
                 bomb.Explode();
+                ThrowPlayers(blastOrigin, BombHolderId.Value);
             }
             else
             {
@@ -197,11 +442,11 @@ public class MatchManager : NetworkBehaviour
 
         _shownPhase = phase;
 
-        // Round over freezes the players; in the other phases they move freely.
+        // Between rounds and at the results the players stand still; otherwise they move freely.
         TagPlayer localPlayer = FindPlayer(NetworkManager.LocalClientId);
         if (localPlayer != null)
         {
-            localPlayer.SetInputEnabled(phase != MatchPhase.RoundOver);
+            localPlayer.SetInputEnabled(phase == MatchPhase.Playing || phase == MatchPhase.WaitingForPlayers);
         }
     }
 
@@ -248,17 +493,45 @@ public class MatchManager : NetworkBehaviour
             return;
         }
 
+        double now = NetworkManager.ServerTime.Time;
         float distance = Vector3.Distance(sender.transform.position, target.transform.position);
         PassResult result = PassRules.Check(Phase.Value, BombHolderId.Value, senderId, targetClientId,
-            NetworkManager.ServerTime.Time - _holderSince, rules.passCooldown, distance, rules.passRange + rules.latencyTolerance);
+            now - _holderSince, rules.passCooldown, distance, rules.passRange + rules.latencyTolerance);
         if (result != PassResult.Allowed)
         {
             return;
         }
 
+        AddHoldTime(senderId, (float)(now - _holderSince));
+        AddPass(senderId);
         BombHolderId.Value = targetClientId;
         _shownHolder = targetClientId;
-        _holderSince = NetworkManager.ServerTime.Time;
+        _holderSince = now;
+    }
+
+    // Every machine throws its own copies of the players; only the owner's copy really moves.
+    private void ThrowPlayers(Vector3 origin, ulong holderId)
+    {
+        foreach (TagPlayer player in _players)
+        {
+            BlastReaction reaction = player.GetComponent<BlastReaction>();
+            if (reaction != null)
+            {
+                reaction.Launch(origin, player.OwnerClientId == holderId, player.IsOwner);
+            }
+        }
+    }
+
+    private void ResetBlastReactions()
+    {
+        foreach (TagPlayer player in _players)
+        {
+            BlastReaction reaction = player.GetComponent<BlastReaction>();
+            if (reaction != null)
+            {
+                reaction.Reset();
+            }
+        }
     }
 
     private TagPlayer FindPlayer(ulong clientId)

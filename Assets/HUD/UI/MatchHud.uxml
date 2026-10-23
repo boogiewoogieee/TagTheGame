@@ -5,8 +5,40 @@
         <ui:Label name="Timer" text="30" picking-mode="Ignore" class="hud-timer" />
         <ui:Label name="Status" text="Opponent has the bomb" picking-mode="Ignore" class="hud-status" />
         <ui:VisualElement name="RoundOver" picking-mode="Ignore" class="hud-overlay hud-round-over">
-            <ui:Label name="Result" text="You win" picking-mode="Ignore" class="hud-result" />
-            <ui:Button name="Leave" text="Leave to menu" focusable="false" class="button hud-button" />
+            <ui:Label name="Result" text="Round won" picking-mode="Ignore" class="hud-result" />
+            <ui:Label name="Score" text="1 : 0" picking-mode="Ignore" class="hud-score" />
+            <ui:Label name="Countdown" text="Next round in 4" picking-mode="Ignore" class="hud-countdown" />
+        </ui:VisualElement>
+        <ui:VisualElement name="Results" class="hud-overlay hud-menu-backdrop">
+            <ui:VisualElement name="ResultsCard" class="hud-menu-card results-card">
+                <ui:Label name="ResultsTitle" text="You win" picking-mode="Ignore" class="hud-menu-title hud-result-win" />
+                <ui:Label name="ResultsScore" text="2 : 1" picking-mode="Ignore" class="results-score" />
+                <ui:VisualElement name="Header" class="results-row results-row--header">
+                    <ui:Label text="Player" class="results-cell results-cell--name" />
+                    <ui:Label text="Rounds" class="results-cell" />
+                    <ui:Label text="Bomb time" class="results-cell" />
+                    <ui:Label text="Passes" class="results-cell" />
+                </ui:VisualElement>
+                <ui:VisualElement name="Row1" class="results-row">
+                    <ui:Label name="Row1Name" text="Player 1" class="results-cell results-cell--name" />
+                    <ui:Label name="Row1Rounds" text="0" class="results-cell" />
+                    <ui:Label name="Row1Hold" text="0.0 s" class="results-cell" />
+                    <ui:Label name="Row1Passes" text="0" class="results-cell" />
+                </ui:VisualElement>
+                <ui:VisualElement name="Row2" class="results-row">
+                    <ui:Label name="Row2Name" text="Player 2" class="results-cell results-cell--name" />
+                    <ui:Label name="Row2Rounds" text="0" class="results-cell" />
+                    <ui:Label name="Row2Hold" text="0.0 s" class="results-cell" />
+                    <ui:Label name="Row2Passes" text="0" class="results-cell" />
+                </ui:VisualElement>
+                <ui:Label name="ResultsHint" text="" picking-mode="Ignore" class="hud-menu-hint" />
+                <ui:VisualElement name="ResultsButtons" class="results-buttons">
+                    <ui:Button name="PlayAgain" text="Play again" focusable="false" class="button hud-button results-button" />
+                    <ui:Button name="NextLevel" text="Next level" focusable="false" class="button hud-button results-button" />
+                    <ui:Button name="ReturnToLobby" text="Return to lobby" focusable="false" class="button hud-button results-button" />
+                </ui:VisualElement>
+                <ui:Button name="ResultsLeave" text="Leave" focusable="false" class="button hud-button results-leave" />
+            </ui:VisualElement>
         </ui:VisualElement>
         <ui:VisualElement name="Menu" class="hud-overlay hud-menu-backdrop">
             <ui:VisualElement name="MenuCard" class="hud-menu-card">

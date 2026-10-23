@@ -4261,7 +4261,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::DevNetworkPanel
   address: 127.0.0.1
   port: 7777
-  match: {fileID: 900908509}
 --- !u!114 &513530289
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4383,6 +4382,7 @@ GameObject:
   - component: {fileID: 537730878}
   - component: {fileID: 537730881}
   - component: {fileID: 537730882}
+  - component: {fileID: 537730883}
   m_Layer: 0
   m_Name: MatchHud
   m_TagString: Untagged
@@ -4403,21 +4403,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MatchHud
   match: {fileID: 900908509}
-  onLeave:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 537730881}
-        m_TargetAssemblyTypeName: MatchExit, Assembly-CSharp
-        m_MethodName: LeaveToMenu
-        m_Mode: 0
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: 
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
   pauseMenu: {fileID: 537730882}
 --- !u!114 &537730879
 MonoBehaviour:
@@ -4482,6 +4467,35 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 20109c5d35a1ffa4f8d8f4eb6303439e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PauseMenu
+  onLeave:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 537730881}
+        m_TargetAssemblyTypeName: MatchExit, Assembly-CSharp
+        m_MethodName: LeaveToMenu
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: 
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+--- !u!114 &537730883
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 537730877}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4fdfafc9381d7a849885bfdae96de8b3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ResultsPanel
+  match: {fileID: 900908509}
+  pauseMenu: {fileID: 537730882}
   onLeave:
     m_PersistentCalls:
       m_Calls:
@@ -8201,6 +8215,7 @@ MonoBehaviour:
   rules: {fileID: 11400000, guid: cd088559eb38f724782f45dd5a75b3d6, type: 2}
   bomb: {fileID: 421480166}
   spawner: {fileID: 647151058}
+  menuScene: MainMenu
   BombHolderId:
     UpdateTraits:
       MinSecondsBetweenUpdates: 0
@@ -8216,6 +8231,30 @@ MonoBehaviour:
       MinSecondsBetweenUpdates: 0
       MaxSecondsBetweenUpdates: 0
     m_InternalValue: 0
+  NextRoundAtServerTime:
+    UpdateTraits:
+      MinSecondsBetweenUpdates: 0
+      MaxSecondsBetweenUpdates: 0
+    m_InternalValue: 0
+  LastRoundLoserId:
+    UpdateTraits:
+      MinSecondsBetweenUpdates: 0
+      MaxSecondsBetweenUpdates: 0
+    m_InternalValue: 18446744073709551615
+  WinnerId:
+    UpdateTraits:
+      MinSecondsBetweenUpdates: 0
+      MaxSecondsBetweenUpdates: 0
+    m_InternalValue: 18446744073709551615
+  OpponentLeft:
+    UpdateTraits:
+      MinSecondsBetweenUpdates: 0
+      MaxSecondsBetweenUpdates: 0
+    m_InternalValue: 0
+  Stats:
+    UpdateTraits:
+      MinSecondsBetweenUpdates: 0
+      MaxSecondsBetweenUpdates: 0
 --- !u!1001 &927123252
 PrefabInstance:
   m_ObjectHideFlags: 0
