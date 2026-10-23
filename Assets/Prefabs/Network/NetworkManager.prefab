@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 3789553527922687006}
   - component: {fileID: 1682518883241757206}
   - component: {fileID: 7641902002896512103}
+  - component: {fileID: 6660363735663087996}
   m_Layer: 0
   m_Name: NetworkManager
   m_TagString: Untagged
@@ -133,3 +134,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b7968be90a70324499fae17453cf4749, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ConnectionNotes
+--- !u!114 &6660363735663087996
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8709829674529528840}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e60572d607090ea47ba17c0294db905c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SessionService
+  maxPlayers: 2
+  listSize: 50
+  timeoutSeconds: 15
