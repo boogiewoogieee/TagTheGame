@@ -5,6 +5,7 @@ using UnityEngine;
 // and tumbles head over heels before landing. The owning machine flies the root on a
 // short arc (the position travels over the usual network sync); every machine spins the
 // model child locally and freezes the animation, so the tumble needs no network traffic.
+// The flight goes through the CharacterController, so walls and tunnel roofs stop it.
 public class BlastReaction : MonoBehaviour
 {
     [Tooltip("The model under the player root. It spins; the root only moves.")]
@@ -35,13 +36,16 @@ public class BlastReaction : MonoBehaviour
     [Range(0f, 1f)]
     public float nearbyStrength = 0.5f;
 
+    [Tooltip("Longest possible flight, in seconds. Ends it even if no ground is found, e.g. off the map edge.")]
+    public float maxFlightSeconds = 3f;
+
     private CharacterController _characterController;
     private ThirdPersonController _controller;
     private Animator _animator;
 
     private bool _flying;
     private Vector3 _velocity;
-    private float _groundY;
+    private float _flightLeft;
     private float _tumbleLeft;
     private float _recoverLeft;
     private Vector3 _spinAxis;
@@ -68,25 +72,21 @@ public class BlastReaction : MonoBehaviour
             return;
         }
 
-        if (ownedHere && !_flying)
+        if (ownedHere && !_flying && _characterController != null)
         {
             Vector3 away = transform.position - origin;
             away.y = 0f;
             away = away.sqrMagnitude > 0.01f ? away.normalized : Random.insideUnitSphere;
             away.y = 0f;
             _velocity = Vector3.up * launchSpeed * strength + away.normalized * pushSpeed * strength;
-            _groundY = transform.position.y;
+            _flightLeft = maxFlightSeconds;
             _flying = true;
 
-            // The controller would fight the flight and keep snapping the character to the ground.
+            // The third-person controller would fight the flight with its own gravity and
+            // snap the character back to the ground. The CharacterController stays on for collisions.
             if (_controller != null)
             {
                 _controller.enabled = false;
-            }
-
-            if (_characterController != null)
-            {
-                _characterController.enabled = false;
             }
         }
 
@@ -125,12 +125,7 @@ public class BlastReaction : MonoBehaviour
     {
         if (_flying)
         {
-            _velocity.y += gravity * Time.deltaTime;
-            transform.position += _velocity * Time.deltaTime;
-            if (_velocity.y < 0f && transform.position.y <= _groundY)
-            {
-                Land();
-            }
+            Fly();
         }
 
         if (modelRoot == null)
@@ -163,18 +158,36 @@ public class BlastReaction : MonoBehaviour
         }
     }
 
+    private void Fly()
+    {
+        // A teleport to the spawn point switches the CharacterController off for a moment.
+        if (!_characterController.enabled)
+        {
+            return;
+        }
+
+        _flightLeft -= Time.deltaTime;
+        _velocity.y += gravity * Time.deltaTime;
+        CollisionFlags hit = _characterController.Move(_velocity * Time.deltaTime);
+
+        // Bumping a roof ends the climb at once, instead of sticking to it until gravity wins.
+        if ((hit & CollisionFlags.Above) != 0 && _velocity.y > 0f)
+        {
+            _velocity.y = 0f;
+        }
+
+        bool landed = (hit & CollisionFlags.Below) != 0 && _velocity.y < 0f;
+        if (landed || _flightLeft <= 0f)
+        {
+            Land();
+        }
+    }
+
+    // Hands the character back to its controller, which takes over gravity from here.
     private void Land()
     {
-        Vector3 position = transform.position;
-        position.y = _groundY;
-        transform.position = position;
         _flying = false;
         _velocity = Vector3.zero;
-
-        if (_characterController != null)
-        {
-            _characterController.enabled = true;
-        }
 
         if (_controller != null)
         {
