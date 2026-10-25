@@ -162,6 +162,7 @@
     height: 46px;
     font-size: 24px;
     align-self: center;
+    margin: 0;
 }
 
 .game-list-status {
@@ -174,4 +175,25 @@
     -unity-font-style: bold;
     white-space: normal;
     -unity-text-align: upper-center;
+}
+
+/* The menu's theme has no Unity default styles, so the list's inner parts get no size of
+   their own: without these the rows spill out of a zero-height viewport. The scrollbars
+   stay hidden (the mouse wheel still scrolls), since the theme would draw them with the
+   settings sliders' look. */
+.game-list .unity-scroll-view__content-and-vertical-scroll-container {
+    flex-direction: row;
+    flex-grow: 1;
+    flex-shrink: 1;
+}
+
+.game-list .unity-scroll-view__content-viewport {
+    flex-direction: column;
+    flex-grow: 1;
+    flex-shrink: 1;
+    overflow: hidden;
+}
+
+.game-list .unity-scroll-view__content-container {
+    flex-shrink: 0;
 }

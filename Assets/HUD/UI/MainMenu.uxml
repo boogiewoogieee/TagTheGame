@@ -18,7 +18,7 @@
                 <ui:Label text="Open games" class="game-list-title"/>
                 <ui:Button text="Refresh" name="RefreshGames" class="button game-list-refresh"/>
             </ui:VisualElement>
-            <ui:ScrollView name="GameList" class="game-list"/>
+            <ui:ScrollView name="GameList" class="game-list" mode="Vertical" horizontal-scroller-visibility="Hidden" vertical-scroller-visibility="Hidden"/>
             <ui:Label text="" name="GameListStatus" class="game-list-status"/>
             <ui:Button text="Host Lobby" name="Host" class="button" style="margin-top: 20px; width: 500px; height: 130px; font-size: 50px;"/>
             <ui:Button text="Join by address" name="Join" class="button" style="width: 500px; height: 130px; margin-top: 30px; font-size: 50px;"/>
@@ -31,7 +31,7 @@
             <ui:Button text="X" name="X" style="position: absolute; border-top-left-radius: 10px; border-top-right-radius: 10px; border-bottom-right-radius: 10px; border-bottom-left-radius: 10px; border-top-width: 0; border-right-width: 0; border-bottom-width: 0; border-left-width: 0; background-color: rgb(233, 206, 118); font-size: 20px; -unity-font-style: bold; height: 45px; width: 40px; margin-top: 10px; margin-right: 5px; margin-left: 5px; display: flex; padding-right: 15px; padding-left: 12px; align-content: auto; margin-bottom: 10px; padding-top: 11px;"/>
             <ui:Label text="Multiplayer Settings" name="Multiplayer" style="margin-top: 60px; align-self: center; -unity-font-style: bold; font-size: 30px; margin-bottom: 10px;"/>
             <ui:Toggle label="LAN only (direct)" name="HostServer" style="-unity-font-style: bold; font-size: 30px; margin-right: 5px; width: 60%; margin-top: 10px; margin-bottom: 5px; align-items: center; justify-content: center; align-self: center; -unity-text-auto-size: none; background-position-x: center; background-position-y: center; margin-left: 10px;"/>
-            <ui:TextField label="Server Name" placeholder-text="Your game's name" name="ServerName" value="" max-length="32" password="false" style="-unity-font-style: bold; font-size: 30px; margin-bottom: 5px; margin-left: 5px; margin-right: 10px;"/>
+            <ui:TextField label="Game name (optional)" name="ServerName" max-length="32" style="-unity-font-style: bold; font-size: 30px; margin-bottom: 5px; margin-left: 5px; margin-right: 10px;"/>
             <ui:Slider label="Max Player" value="5" high-value="10" name="MaxPlayer" class="slider" style="display: none; margin-top: 10px; -unity-font-style: bold; font-size: 30px; margin-right: 10px; margin-left: 10px; margin-bottom: 10px;"/>
             <ui:DropdownField label="Can join my group" choices="Anyone,Friends,None" index="0" style="display: none; -unity-font-style: bold; flex-direction: row; align-self: stretch; justify-content: center; align-items: center; font-size: 30px; -unity-text-auto-size: none; margin-bottom: 10px; margin-top: 5px; margin-left: 10px; margin-right: 10px;"/>
             <ui:Button text="Create Lobby" name="Create_Lobby" class="button" style="margin-top: 30px; margin-left: 0; margin-right: 0;"/>
