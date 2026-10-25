@@ -20,6 +20,8 @@ public class SessionService : MonoBehaviour
 {
     public const string OfflineMessage = "Can't reach the online service. Use Direct connect.";
     public const string GameGoneMessage = "That game is no longer open. Refresh the list.";
+    public const string JoinFailedMessage = "Couldn't join that game. It may have started, filled up or closed. Refresh the list.";
+    public const string HostOfflineMessage = "Can't reach the online service. Tick \"LAN only (direct)\" to host without it.";
 
     [Tooltip("Players per game, host included.")]
     public int maxPlayers = 2;
@@ -37,6 +39,7 @@ public class SessionService : MonoBehaviour
     private ISession _session;
     private List<GameListing> _lastList = new List<GameListing>();
     private float _lastListTime = float.NegativeInfinity;
+    private bool _failing;
 
     public bool IsBusy { get; private set; }
     public string LastError { get; private set; } = "";
@@ -114,7 +117,7 @@ public class SessionService : MonoBehaviour
                 MaxPlayers = maxPlayers,
             }.WithRelayNetwork();
             _session = await WithTimeout(MultiplayerService.Instance.CreateSessionAsync(options), LeaveIfLate);
-        });
+        }, HostOfflineMessage);
     }
 
     // Joins a game from the list and starts this machine as its client.
@@ -124,22 +127,33 @@ public class SessionService : MonoBehaviour
         {
             await EnsureSignedInAsync();
             _session = await WithTimeout(MultiplayerService.Instance.JoinSessionByIdAsync(gameId), LeaveIfLate);
-        });
+        }, JoinFailedMessage);
     }
 
-    // Host only. A started match takes the game off the list; the lobby puts it back.
+    // Host only. A started match takes the game off the list; the lobby puts it back and
+    // frees the seat of anyone who dropped out without leaving. Netcode's own gate still
+    // refuses late joiners, so a failed request here only leaves the list out of date.
     public Task<bool> SetJoinableAsync(bool joinable)
     {
         IHostSession host = _session as IHostSession;
-        if (host == null || host.IsLocked == !joinable)
+        bool dropOthers = joinable && HostIsAlone(host);
+        if (host == null || (host.IsLocked == !joinable && !dropOthers))
         {
             return Task.FromResult(true);
         }
 
         return Run(async () =>
         {
-            host.IsLocked = !joinable;
-            await WithTimeout(host.SavePropertiesAsync());
+            if (dropOthers)
+            {
+                await RemoveOtherPlayersAsync(host);
+            }
+
+            if (host.IsLocked == joinable)
+            {
+                host.IsLocked = !joinable;
+                await WithTimeout(host.SavePropertiesAsync());
+            }
         });
     }
 
@@ -156,6 +170,10 @@ public class SessionService : MonoBehaviour
         try
         {
             await WithTimeout(session.LeaveAsync());
+        }
+        catch (SessionException e) when (e.Error == SessionError.SessionNotFound || e.Error == SessionError.SessionDeleted)
+        {
+            // The host left first and the game went with it: nothing left to leave.
         }
         catch (Exception e)
         {
@@ -199,6 +217,39 @@ public class SessionService : MonoBehaviour
         }
     }
 
+    // A player whose game crashed or lost its connection never left, and the service would
+    // keep the seat taken for a while. Netcode and the service number players differently,
+    // so only the clear case is handled: a host alone on the network has nobody else in its game.
+    private bool HostIsAlone(IHostSession host)
+    {
+        return host != null && _networkManager.IsServer
+            && _networkManager.ConnectedClientsIds.Count <= 1 && host.Players.Count > 1;
+    }
+
+    private async Task RemoveOtherPlayersAsync(IHostSession host)
+    {
+        List<string> others = new List<string>();
+        foreach (IReadOnlyPlayer player in host.Players)
+        {
+            if (player.Id != host.CurrentPlayer.Id)
+            {
+                others.Add(player.Id);
+            }
+        }
+
+        foreach (string id in others)
+        {
+            try
+            {
+                await WithTimeout(host.RemovePlayerAsync(id));
+            }
+            catch (Exception)
+            {
+                // Usually the player's own Leave got there first; if not, the service frees the seat itself later.
+            }
+        }
+    }
+
     // Two copies on one PC would sign in as the same player and could not join each other,
     // so a Multiplayer Play Mode virtual player signs in under its own profile.
     private static string PlayModeTag()
@@ -217,7 +268,8 @@ public class SessionService : MonoBehaviour
     }
 
     // One request at a time, with the failure turned into a sentence for the menu.
-    private async Task<bool> Run(Func<Task> request)
+    // failMessage is what the player reads when the service gives no clearer reason.
+    private async Task<bool> Run(Func<Task> request, string failMessage = OfflineMessage)
     {
         if (IsBusy)
         {
@@ -230,26 +282,28 @@ public class SessionService : MonoBehaviour
         try
         {
             await request();
+            _failing = false;
             return true;
         }
         catch (TimeoutException)
         {
-            LastError = OfflineMessage;
+            LastError = failMessage;
+            Warn("Online service: no answer within " + timeoutSeconds + " s.");
         }
         catch (SessionException e)
         {
-            LastError = MessageFor(e.Error);
-            Debug.LogWarning("Online service: " + e.Error + " " + e.Message);
+            LastError = MessageFor(e.Error, failMessage);
+            Warn("Online service: " + e.Error + " " + e.Message);
         }
         catch (RequestFailedException e)
         {
-            LastError = OfflineMessage;
-            Debug.LogWarning("Online service request failed (" + e.ErrorCode + "): " + e.Message);
+            LastError = failMessage;
+            Warn("Online service request failed (" + e.ErrorCode + "): " + e.Message);
         }
         catch (Exception e)
         {
-            LastError = OfflineMessage;
-            Debug.LogWarning("Online service: " + e.Message);
+            LastError = failMessage;
+            Warn("Online service: " + e.Message);
         }
         finally
         {
@@ -259,7 +313,19 @@ public class SessionService : MonoBehaviour
         return false;
     }
 
-    private static string MessageFor(SessionError error)
+    // Once per run of failures: the game list keeps refreshing while the service is
+    // unreachable, and the same warning every few seconds would bury everything else.
+    private void Warn(string message)
+    {
+        if (!_failing)
+        {
+            Debug.LogWarning(message);
+        }
+
+        _failing = true;
+    }
+
+    private static string MessageFor(SessionError error, string failMessage)
     {
         switch (error)
         {
@@ -270,7 +336,7 @@ public class SessionService : MonoBehaviour
             case SessionError.RateLimitExceeded:
                 return "Too many requests. Wait a moment and try again.";
             default:
-                return OfflineMessage;
+                return failMessage;
         }
     }
 
