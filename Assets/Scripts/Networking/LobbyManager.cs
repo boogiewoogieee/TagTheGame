@@ -52,11 +52,7 @@ public class LobbyManager : NetworkBehaviour
             NetworkManager.OnConnectionEvent += OnConnectionEvent;
 
             // A lobby that is open again takes players again (the match locked it).
-            ConnectionGate gate = NetworkManager.GetComponent<ConnectionGate>();
-            if (gate != null)
-            {
-                gate.AcceptingPlayers = true;
-            }
+            SetJoinable(true);
 
             AddPlayer(NetworkManager.ServerClientId, name);
         }
@@ -122,13 +118,25 @@ public class LobbyManager : NetworkBehaviour
             return;
         }
 
+        SetJoinable(false);
+        ResetReady();
+    }
+
+    // The gate refuses connections; an online game also leaves or rejoins the list of
+    // open games, so nobody tries to join a match they would be turned away from.
+    private void SetJoinable(bool joinable)
+    {
         ConnectionGate gate = NetworkManager.GetComponent<ConnectionGate>();
         if (gate != null)
         {
-            gate.AcceptingPlayers = false;
+            gate.AcceptingPlayers = joinable;
         }
 
-        ResetReady();
+        SessionService sessions = NetworkManager.GetComponent<SessionService>();
+        if (sessions != null)
+        {
+            _ = sessions.SetJoinableAsync(joinable);
+        }
     }
 
     [Rpc(SendTo.Server)]
@@ -179,6 +187,9 @@ public class LobbyManager : NetworkBehaviour
             Players.RemoveAt(index);
             ResetReady();
         }
+
+        // Frees the seat in the online list if the player vanished without leaving it.
+        SetJoinable(true);
     }
 
     private void ResetReady()

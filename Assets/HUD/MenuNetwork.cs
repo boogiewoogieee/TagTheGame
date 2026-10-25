@@ -9,7 +9,8 @@ using UnityEngine.UIElements;
 // The networking half of the main menu. MenuController owns the screens and LobbyPanel
 // the lobby; this owns hosting, joining and leaving, and reports back through UnityEvents
 // so the scripts never reach into each other. The menu scene doubles as the lobby: the
-// host starts the network here and the client joins here.
+// host starts the network here and the client joins here. Games are hosted online through
+// SessionService (listed for everyone) or, with "LAN only" ticked, directly by IP address.
 [RequireComponent(typeof(UIDocument))]
 public class MenuNetwork : MonoBehaviour
 {
@@ -46,7 +47,16 @@ public class MenuNetwork : MonoBehaviour
     private Button _joinButton;
     private Button _cancelButton;
     private Button _createLobbyButton;
+    private Toggle _lanOnlyToggle;
+    private TextField _gameNameField;
+    private Label _createStatus;
+    private SessionService _sessions;
     private bool _connecting;
+    private bool _joinCancelled;
+    private string _connectingTo = "";
+
+    // True while a join is under way; the game list disables its Join buttons meanwhile.
+    public bool IsConnecting => _connecting;
 
     private void OnEnable()
     {
@@ -69,6 +79,10 @@ public class MenuNetwork : MonoBehaviour
         _joinButton = joining.Q<Button>("Join");
         _cancelButton = joining.Q<Button>("Cancel");
         _createLobbyButton = multiplayer.Q<Button>("Create_Lobby");
+        _lanOnlyToggle = multiplayer.Q<Toggle>("HostServer");
+        _gameNameField = multiplayer.Q<TextField>("ServerName");
+        _createStatus = multiplayer.Q<Label>("CreateStatus");
+        _sessions = _networkManager.GetComponent<SessionService>();
         Button leaveButton = lobby.Q<Button>("Leave");
         Button lobbyClose = lobby.Q<Button>("X");
         Button joiningClose = joining.Q<Button>("X");
@@ -76,7 +90,7 @@ public class MenuNetwork : MonoBehaviour
         _nameField.value = PlayerPrefs.GetString(NamePrefsKey, "");
         _addressField.value = PlayerPrefs.GetString(AddressPrefsKey, "127.0.0.1");
         _joinButton.clicked += Join;
-        _createLobbyButton.clicked += Host;
+        _createLobbyButton.clicked += CreateLobby;
         _cancelButton.clicked += Cancel;
         leaveButton.clicked += Leave;
         lobbyClose.clicked += Leave;
@@ -125,7 +139,7 @@ public class MenuNetwork : MonoBehaviour
         }
 
         _joinButton.clicked -= Join;
-        _createLobbyButton.clicked -= Host;
+        _createLobbyButton.clicked -= CreateLobby;
         _cancelButton.clicked -= Cancel;
 
         _networkManager.OnServerStarted -= OnServerStarted;
@@ -133,6 +147,20 @@ public class MenuNetwork : MonoBehaviour
         _networkManager.OnClientConnectedCallback -= OnClientConnected;
         _networkManager.OnClientStopped -= OnClientStopped;
         _networkManager.OnTransportFailure -= OnTransportFailure;
+    }
+
+    // Create Lobby on the Multiplayer Settings screen: an online game by default, a direct
+    // LAN host when "LAN only" is ticked or the online service is not set up.
+    public void CreateLobby()
+    {
+        if (_lanOnlyToggle.value || _sessions == null)
+        {
+            Host();
+        }
+        else
+        {
+            HostOnline();
+        }
     }
 
     public void Host()
@@ -152,6 +180,79 @@ public class MenuNetwork : MonoBehaviour
         }
     }
 
+    // Lists the game for everyone; the network starts when the service has set it up,
+    // and the usual OnServerStarted then opens the lobby.
+    private async void HostOnline()
+    {
+        if (_networkManager.IsListening)
+        {
+            return;
+        }
+
+        if (_sessions.IsBusy)
+        {
+            // A list refresh may still be on its way back; it takes about a second.
+            _createStatus.text = "Still waiting for the online service. Try again in a moment.";
+            return;
+        }
+
+        HandNameToLobby();
+        _createLobbyButton.SetEnabled(false);
+        _hostButton.SetEnabled(false);
+        _joinButton.SetEnabled(false);
+        _createStatus.text = "Creating your game...";
+        bool created = await _sessions.CreateGameAsync(_gameNameField.value, _nameField.value);
+        if (this == null)
+        {
+            return;
+        }
+
+        ShowIdle(created ? "" : _sessions.LastError);
+    }
+
+    // Called by the game list. Joining goes through the online service, which starts the
+    // client; OnClientConnected then opens the lobby as with a direct join.
+    public async void JoinOnline(GameListing game)
+    {
+        if (_networkManager.IsListening || _connecting || _sessions == null)
+        {
+            return;
+        }
+
+        HandNameToLobby();
+        _connecting = true;
+        _joinCancelled = false;
+        _connectingTo = string.IsNullOrWhiteSpace(game.Name) ? "the game" : game.Name;
+        _joinStatus.text = "Joining " + _connectingTo + "...";
+        _hostButton.SetEnabled(false);
+        _joinButton.SetEnabled(false);
+        _cancelButton.style.display = DisplayStyle.Flex;
+
+        bool joined = await _sessions.JoinGameAsync(game.Id);
+        if (this == null)
+        {
+            return;
+        }
+
+        if (_joinCancelled)
+        {
+            // Cancel was pressed while the service was still answering; leave what it set up.
+            if (joined)
+            {
+                await _sessions.LeaveGameAsync();
+            }
+
+            return;
+        }
+
+        // A refusal from the host has already been shown by OnClientStopped.
+        if (!joined && _connecting)
+        {
+            _connecting = false;
+            ShowIdle(_sessions.LastError);
+        }
+    }
+
     public void Join()
     {
         if (_networkManager.IsListening)
@@ -168,6 +269,7 @@ public class MenuNetwork : MonoBehaviour
 
         PlayerPrefs.SetString(AddressPrefsKey, address);
         HandNameToLobby();
+        _connectingTo = address;
         UnityTransport transport = GetTransport();
         transport.SetConnectionData(address, port);
         transport.ConnectTimeoutMS = 1000;
@@ -186,7 +288,12 @@ public class MenuNetwork : MonoBehaviour
         if (_connecting)
         {
             _connecting = false;
-            _networkManager.Shutdown();
+            _joinCancelled = true;
+            if (_networkManager.IsListening)
+            {
+                _networkManager.Shutdown();
+            }
+
             ShowIdle("");
         }
     }
@@ -239,7 +346,7 @@ public class MenuNetwork : MonoBehaviour
         if (_connecting)
         {
             _connecting = false;
-            ShowIdle(string.IsNullOrEmpty(reason) ? "Could not connect to " + _addressField.value.Trim() + "." : reason);
+            ShowIdle(string.IsNullOrEmpty(reason) ? "Could not connect to " + _connectingTo + "." : reason);
         }
         else
         {
@@ -255,11 +362,14 @@ public class MenuNetwork : MonoBehaviour
         ShowIdle("Network error. Check the address and port.");
     }
 
+    // Both screens that start a game share the message, so it is seen wherever the player is.
     private void ShowIdle(string message)
     {
         _joinStatus.text = message;
+        _createStatus.text = message;
         _hostButton.SetEnabled(true);
         _joinButton.SetEnabled(true);
+        _createLobbyButton.SetEnabled(true);
         _cancelButton.style.display = DisplayStyle.None;
     }
 
