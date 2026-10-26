@@ -1,4 +1,3 @@
-# Pull requests that change shared project configuration
-# automatically request a review from the project lead.
-/Packages/        @boogiewoogieee
-/ProjectSettings/ @boogiewoogieee
+# The project lead reviews and merges every pull request into main,
+# so GitHub requests that review automatically.
+* @boogiewoogieee
