@@ -20,6 +20,7 @@ MonoBehaviour:
   betweenRoundsSeconds: 4
   nextArenaScene: 
   countdownSeconds: 3.6
+  fuseDangerSeconds: 5
   blastRadius: 6
   blastUpSpeed: 13
   blastOutSpeed: 7

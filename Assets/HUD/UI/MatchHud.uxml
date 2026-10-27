@@ -2,6 +2,7 @@
     <Style src="../MainMenuStyle.uss" />
     <Style src="MatchHud.uss" />
     <ui:VisualElement name="MatchHud" picking-mode="Ignore" class="hud-root">
+        <ui:VisualElement name="DangerVignette" picking-mode="Ignore" class="hud-vignette" />
         <ui:Label name="Timer" text="30" picking-mode="Ignore" class="hud-timer" />
         <ui:Label name="Status" text="Opponent has the bomb" picking-mode="Ignore" class="hud-status" />
         <ui:VisualElement name="RoundOver" picking-mode="Ignore" class="hud-overlay hud-round-over">
