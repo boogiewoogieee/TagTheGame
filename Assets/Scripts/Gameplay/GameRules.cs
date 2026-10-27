@@ -31,4 +31,21 @@ public class GameRules : ScriptableObject
 
     [Tooltip("Scene offered as \"Next level\" on the results screen. Leave empty while there is only one arena.")]
     public string nextArenaScene = "";
+
+    [Header("Blast")]
+    [Tooltip("Players this close to the bomb are thrown by the explosion, in metres. The holder always is.")]
+    [Min(0f)]
+    public float blastRadius = 6f;
+
+    [Tooltip("Upward speed given to a thrown player, in metres per second.")]
+    [Min(0f)]
+    public float blastUpSpeed = 13f;
+
+    [Tooltip("Sideways speed away from the bomb, in metres per second.")]
+    [Min(0f)]
+    public float blastOutSpeed = 7f;
+
+    [Tooltip("Seconds after the explosion before the round result or the results screen appears, so the flight can be watched.")]
+    [Min(0f)]
+    public float resultsDelaySeconds = 3.5f;
 }

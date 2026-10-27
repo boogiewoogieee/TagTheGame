@@ -92,6 +92,7 @@ GameObject:
   - component: {fileID: 6822237261715428148}
   - component: {fileID: 8881281506654714864}
   - component: {fileID: 9215615115460046628}
+  - component: {fileID: 4951139182005226105}
   m_Layer: 8
   m_Name: Player
   m_TagString: Player
@@ -483,15 +484,26 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2b20f94905033b1438f25f04ad522c29, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BlastReaction
-  modelRoot: {fileID: 4609180196245963068}
-  launchSpeed: 9
-  pushSpeed: 3
-  gravity: -22
-  tumbleSeconds: 1.1
-  spinSpeed: 540
-  recoverSeconds: 0.4
-  nearbyRadius: 4
-  nearbyStrength: 0.5
+  spinSpeed: 8
+  holderOutwardFraction: 0.6
+--- !u!114 &4951139182005226105
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4063383498082916017}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cd828f24ed66a97468bc73cd7ef46f9c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RagdollBody
+  ragdollLayer: Ragdoll
+  limbRadius: 0.08
+  torsoRadius: 0.16
+  headRadius: 0.13
+  restSpeed: 0.6
+  restSeconds: 0.3
 --- !u!1001 &6237085053381034657
 PrefabInstance:
   m_ObjectHideFlags: 0

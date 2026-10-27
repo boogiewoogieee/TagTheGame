@@ -28,12 +28,21 @@ public class MatchManager : NetworkBehaviour
     [Tooltip("Scene the host loads for everyone on Return to lobby.")]
     public string menuScene = "MainMenu";
 
+    [Tooltip("Slows the game down at the explosion. Optional.")]
+    public SlowMotion slowMotion;
+
+    [Tooltip("Follows the flying body at the explosion. Optional.")]
+    public BlastCamera blastCamera;
+
     public NetworkVariable<ulong> BombHolderId = new NetworkVariable<ulong>(NoHolder);
     public NetworkVariable<double> DetonateAtServerTime = new NetworkVariable<double>();
     public NetworkVariable<MatchPhase> Phase = new NetworkVariable<MatchPhase>(MatchPhase.WaitingForPlayers);
 
     // Between rounds: when the next round starts and who lost the last one.
     public NetworkVariable<double> NextRoundAtServerTime = new NetworkVariable<double>();
+
+    // When the round result or the results screen may appear: the flight after the explosion comes first.
+    public NetworkVariable<double> ShowResultAtServerTime = new NetworkVariable<double>();
     public NetworkVariable<ulong> LastRoundLoserId = new NetworkVariable<ulong>(NoHolder);
 
     // Match over: the winner, and whether it was decided by the opponent leaving.
@@ -82,6 +91,9 @@ public class MatchManager : NetworkBehaviour
     }
 
     public bool LocalPlayerHasBomb => IsSpawned && BombHolderId.Value == NetworkManager.LocalClientId;
+
+    // False while the explosion and the flight are still worth watching.
+    public bool RoundEndVisible => IsSpawned && NetworkManager.ServerTime.Time >= ShowResultAtServerTime.Value;
 
     public int LocalRoundsWon => RoundsWonOf(NetworkManager.LocalClientId);
 
@@ -305,6 +317,7 @@ public class MatchManager : NetworkBehaviour
         }
 
         LastRoundLoserId.Value = loser;
+        ShowResultAtServerTime.Value = now + rules.resultsDelaySeconds;
 
         // The deciding round goes straight to the results; the countdown is for rounds still to come.
         ulong winner = MatchRules.WinnerOf(SnapshotStats(), rules.roundsToWin);
@@ -315,7 +328,8 @@ public class MatchManager : NetworkBehaviour
             return;
         }
 
-        NextRoundAtServerTime.Value = now + rules.betweenRoundsSeconds;
+        // The pause between rounds starts once the result is on screen, not at the explosion.
+        NextRoundAtServerTime.Value = now + rules.resultsDelaySeconds + rules.betweenRoundsSeconds;
         Phase.Value = MatchPhase.RoundOver;
     }
 
@@ -330,6 +344,9 @@ public class MatchManager : NetworkBehaviour
         WinnerId.Value = _players.Count > 0 ? _players[0].OwnerClientId : NoHolder;
         OpponentLeft.Value = true;
         BombHolderId.Value = NoHolder;
+
+        // Nothing explodes on a forfeit, so there is nothing to wait for.
+        ShowResultAtServerTime.Value = NetworkManager.ServerTime.Time;
         Phase.Value = MatchPhase.MatchOver;
     }
 
@@ -509,21 +526,45 @@ public class MatchManager : NetworkBehaviour
         _holderSince = now;
     }
 
-    // Every machine throws its own copies of the players; only the owner's copy really moves.
+    // Every machine throws its own copies of the players, slows down and watches the flight:
+    // its own body if it flew, otherwise the holder's.
     private void ThrowPlayers(Vector3 origin, ulong holderId)
     {
+        BlastReaction watched = null;
         foreach (TagPlayer player in _players)
         {
             BlastReaction reaction = player.GetComponent<BlastReaction>();
-            if (reaction != null)
+            if (reaction == null)
             {
-                reaction.Launch(origin, player.OwnerClientId == holderId, player.IsOwner);
+                continue;
             }
+
+            bool isHolder = player.OwnerClientId == holderId;
+            bool flew = reaction.Launch(origin, isHolder, rules.blastRadius, rules.blastUpSpeed, rules.blastOutSpeed);
+            if (flew && (player.IsOwner || (watched == null && isHolder)))
+            {
+                watched = reaction;
+            }
+        }
+
+        if (slowMotion != null)
+        {
+            slowMotion.Play();
+        }
+
+        if (blastCamera != null && watched != null)
+        {
+            blastCamera.Follow(watched.Body, origin);
         }
     }
 
     private void ResetBlastReactions()
     {
+        if (blastCamera != null)
+        {
+            blastCamera.Release();
+        }
+
         foreach (TagPlayer player in _players)
         {
             BlastReaction reaction = player.GetComponent<BlastReaction>();

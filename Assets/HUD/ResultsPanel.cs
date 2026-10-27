@@ -74,7 +74,7 @@ public class ResultsPanel : MonoBehaviour
     private void Update()
     {
         bool show = match != null && match.IsSpawned && match.Phase.Value == MatchPhase.MatchOver
-            && !(pauseMenu != null && pauseMenu.IsOpen);
+            && match.RoundEndVisible && !(pauseMenu != null && pauseMenu.IsOpen);
         _screen.style.display = show ? DisplayStyle.Flex : DisplayStyle.None;
         if (!show)
         {

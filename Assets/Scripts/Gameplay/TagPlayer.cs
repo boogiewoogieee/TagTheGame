@@ -151,10 +151,14 @@ public class TagPlayer : NetworkBehaviour
         _controller.enabled = true;
         _playerInput.enabled = true;
 
-        CinemachineCamera followCamera = FindAnyObjectByType<CinemachineCamera>();
-        if (followCamera != null)
+        // The arena also has the blast camera; the follow camera is the one without a BlastCamera.
+        foreach (CinemachineCamera candidate in FindObjectsByType<CinemachineCamera>(FindObjectsInactive.Exclude))
         {
-            followCamera.Follow = cameraRoot;
+            if (candidate.GetComponent<BlastCamera>() == null)
+            {
+                candidate.Follow = cameraRoot;
+                break;
+            }
         }
 
         if (_inputs.cursorLocked)
