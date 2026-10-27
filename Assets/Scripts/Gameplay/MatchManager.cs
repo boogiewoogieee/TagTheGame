@@ -41,6 +41,9 @@ public class MatchManager : NetworkBehaviour
     // Between rounds: when the next round starts and who lost the last one.
     public NetworkVariable<double> NextRoundAtServerTime = new NetworkVariable<double>();
 
+    // When the countdown ends and the players may move; the fuse starts counting from here.
+    public NetworkVariable<double> RoundStartsAtServerTime = new NetworkVariable<double>();
+
     // When the round result or the results screen may appear: the flight after the explosion comes first.
     public NetworkVariable<double> ShowResultAtServerTime = new NetworkVariable<double>();
     public NetworkVariable<ulong> LastRoundLoserId = new NetworkVariable<ulong>(NoHolder);
@@ -89,6 +92,11 @@ public class MatchManager : NetworkBehaviour
             return Mathf.Max(0f, (float)(NextRoundAtServerTime.Value - NetworkManager.ServerTime.Time));
         }
     }
+
+    // Positive during the countdown, negative once the round runs. The HUD draws the digits from it.
+    public double SecondsToRoundStart => IsSpawned ? RoundStartsAtServerTime.Value - NetworkManager.ServerTime.Time : 0;
+
+    public int RoundNumber => LocalRoundsWon + OpponentRoundsWon + 1;
 
     public bool LocalPlayerHasBomb => IsSpawned && BombHolderId.Value == NetworkManager.LocalClientId;
 
@@ -213,7 +221,7 @@ public class MatchManager : NetworkBehaviour
 
         if (_players.Count < 2)
         {
-            if (Phase.Value == MatchPhase.Playing || Phase.Value == MatchPhase.RoundOver)
+            if (Phase.Value == MatchPhase.Playing || Phase.Value == MatchPhase.RoundOver || Phase.Value == MatchPhase.Countdown)
             {
                 EndByForfeit();
             }
@@ -235,6 +243,14 @@ public class MatchManager : NetworkBehaviour
         {
             case MatchPhase.WaitingForPlayers:
                 StartMatch();
+                break;
+
+            case MatchPhase.Countdown:
+                if (now >= RoundStartsAtServerTime.Value)
+                {
+                    Phase.Value = MatchPhase.Playing;
+                }
+
                 break;
 
             case MatchPhase.Playing:
@@ -295,8 +311,11 @@ public class MatchManager : NetworkBehaviour
     {
         TagPlayer holder = _players[Random.Range(0, _players.Count)];
         BombHolderId.Value = holder.OwnerClientId;
-        DetonateAtServerTime.Value = NetworkManager.ServerTime.Time + rules.fuseSeconds;
-        Phase.Value = MatchPhase.Playing;
+
+        // The holder is shown during the countdown, but the fuse only burns from GO.
+        RoundStartsAtServerTime.Value = NetworkManager.ServerTime.Time + rules.countdownSeconds;
+        DetonateAtServerTime.Value = RoundStartsAtServerTime.Value + rules.fuseSeconds;
+        Phase.Value = MatchPhase.Countdown;
     }
 
     // The bomb went off: whoever holds it loses the round, the other player scores.
@@ -420,7 +439,7 @@ public class MatchManager : NetworkBehaviour
     {
         MatchPhase phase = Phase.Value;
 
-        if (phase == MatchPhase.Playing)
+        if (phase == MatchPhase.Playing || phase == MatchPhase.Countdown)
         {
             // A new detonation time means a new round, even when phase and holder look unchanged.
             if (DetonateAtServerTime.Value != _shownDetonateAt)
@@ -433,7 +452,9 @@ public class MatchManager : NetworkBehaviour
             if (BombHolderId.Value != _shownHolder)
             {
                 _shownHolder = BombHolderId.Value;
-                _holderSince = NetworkManager.ServerTime.Time;
+
+                // During the countdown the holder is known early; the holding only counts from GO.
+                _holderSince = System.Math.Max(NetworkManager.ServerTime.Time, RoundStartsAtServerTime.Value);
             }
 
             TagPlayer holder = FindPlayer(_shownHolder);
@@ -456,14 +477,20 @@ public class MatchManager : NetworkBehaviour
                 bomb.Detach();
             }
         }
+        else if (_shownPhase == MatchPhase.Countdown)
+        {
+            // The round never started (the opponent left during the countdown).
+            bomb.Detach();
+        }
 
         _shownPhase = phase;
 
         // Between rounds and at the results the players stand still; otherwise they move freely.
+        // The countdown freezes them too, but keeps the cursor hidden: play is about to start.
         TagPlayer localPlayer = FindPlayer(NetworkManager.LocalClientId);
         if (localPlayer != null)
         {
-            localPlayer.SetInputEnabled(phase == MatchPhase.Playing || phase == MatchPhase.WaitingForPlayers);
+            localPlayer.SetInputEnabled(phase == MatchPhase.Playing || phase == MatchPhase.WaitingForPlayers, phase == MatchPhase.Countdown);
         }
     }
 

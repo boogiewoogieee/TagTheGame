@@ -37,6 +37,10 @@ public class TagPlayer : NetworkBehaviour
     private bool _matchAllowsInput = true;
     private bool _menuOpen;
 
+    // The countdown freezes the player but keeps the cursor hidden; the round-over card frees it.
+    private bool _keepCursorLocked;
+    private bool _cursorLocked;
+
     public override void OnNetworkSpawn()
     {
         _playerInput = GetComponent<PlayerInput>();
@@ -94,10 +98,11 @@ public class TagPlayer : NetworkBehaviour
         }
     }
 
-    // Called by the match every frame: false while the round is over.
-    public void SetInputEnabled(bool inputEnabled)
+    // Called by the match every frame: false while the round is over or about to start.
+    public void SetInputEnabled(bool inputEnabled, bool keepCursorLocked = false)
     {
         _matchAllowsInput = inputEnabled;
+        _keepCursorLocked = keepCursorLocked;
         ApplyInputState();
     }
 
@@ -112,15 +117,26 @@ public class TagPlayer : NetworkBehaviour
     // running, so gravity and the idle animation still work while frozen.
     private void ApplyInputState()
     {
+        if (!IsOwner)
+        {
+            return;
+        }
+
         bool inputEnabled = _matchAllowsInput && !_menuOpen;
-        if (!IsOwner || _playerInput.enabled == inputEnabled)
+        bool lockCursor = inputEnabled || (_keepCursorLocked && !_menuOpen);
+        if (lockCursor != _cursorLocked)
+        {
+            _cursorLocked = lockCursor;
+            _inputs.cursorLocked = lockCursor;
+            Cursor.lockState = lockCursor ? CursorLockMode.Locked : CursorLockMode.None;
+        }
+
+        if (_playerInput.enabled == inputEnabled)
         {
             return;
         }
 
         _playerInput.enabled = inputEnabled;
-        _inputs.cursorLocked = inputEnabled;
-        Cursor.lockState = inputEnabled ? CursorLockMode.Locked : CursorLockMode.None;
 
         if (!inputEnabled)
         {
@@ -164,6 +180,7 @@ public class TagPlayer : NetworkBehaviour
         if (_inputs.cursorLocked)
         {
             Cursor.lockState = CursorLockMode.Locked;
+            _cursorLocked = true;
         }
 
         // Unity allows one active listener. The scene has one on the main camera; switch it
