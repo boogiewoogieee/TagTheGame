@@ -55,7 +55,7 @@ public class MatchHud : MonoBehaviour
         SetVisible(_timer, inMatch && phase == MatchPhase.Playing);
         SetVisible(_status, inMatch && !afterRound);
         bool menuOpen = pauseMenu != null && pauseMenu.IsOpen;
-        SetVisible(_roundOver, inMatch && phase == MatchPhase.RoundOver && !menuOpen);
+        SetVisible(_roundOver, inMatch && phase == MatchPhase.RoundOver && !menuOpen && match.RoundEndVisible);
 
         if (!inMatch)
         {
