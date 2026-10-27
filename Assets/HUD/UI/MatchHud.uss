@@ -80,6 +80,48 @@
     padding-top: 110px;
 }
 
+/* Round start: the digit in the upper half of the screen, the round and the bomb note under it. */
+.hud-round-start {
+    /* Hidden until RoundCountdown shows it, so the layout never shows its placeholder digit. */
+    display: none;
+    justify-content: flex-start;
+    padding-top: 150px;
+}
+
+.hud-start-digit {
+    height: 240px;
+    font-size: 220px;
+    color: rgb(255, 255, 255);
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+    -unity-text-outline-width: 4px;
+    -unity-text-outline-color: rgb(0, 0, 0);
+}
+
+.hud-start-round {
+    margin-top: 10px;
+    font-size: 52px;
+    color: rgb(255, 255, 255);
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+    -unity-text-outline-width: 2px;
+    -unity-text-outline-color: rgb(0, 0, 0);
+}
+
+.hud-start-bomb {
+    margin-top: 4px;
+    font-size: 40px;
+    color: rgb(125, 220, 110);
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+    -unity-text-outline-width: 2px;
+    -unity-text-outline-color: rgb(0, 0, 0);
+}
+
+.hud-start-bomb--danger {
+    color: rgb(255, 96, 64);
+}
+
 /* Same look as the main menu's buttons (.button in MainMenuStyle.uss), sized for the HUD. */
 .button.hud-button {
     width: 420px;

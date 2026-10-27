@@ -52,8 +52,11 @@ public class MatchHud : MonoBehaviour
         MatchPhase phase = inMatch ? match.Phase.Value : MatchPhase.WaitingForPlayers;
 
         bool afterRound = phase == MatchPhase.RoundOver || phase == MatchPhase.MatchOver;
-        SetVisible(_timer, inMatch && phase == MatchPhase.Playing);
-        SetVisible(_status, inMatch && !afterRound);
+
+        // The countdown names the holder itself, so the timer and the status line wait until "GO!" has faded.
+        bool goOnScreen = phase == MatchPhase.Playing && match.SecondsToRoundStart > -CountdownRules.GoSeconds;
+        SetVisible(_timer, inMatch && phase == MatchPhase.Playing && !goOnScreen);
+        SetVisible(_status, inMatch && !afterRound && phase != MatchPhase.Countdown && !goOnScreen);
         bool menuOpen = pauseMenu != null && pauseMenu.IsOpen;
         SetVisible(_roundOver, inMatch && phase == MatchPhase.RoundOver && !menuOpen && match.RoundEndVisible);
 

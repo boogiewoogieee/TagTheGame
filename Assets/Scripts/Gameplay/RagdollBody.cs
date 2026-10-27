@@ -40,6 +40,14 @@ public class RagdollBody : MonoBehaviour
     // Landed means frozen: the body no longer moves at all.
     public bool HasLanded => IsLimp && _frozen;
 
+    // Driven means another machine runs this body's flight and moves the hips; the limbs still flop here.
+    public bool IsDriven { get; private set; }
+
+    // Game seconds since the body went limp; it stops counting when the body freezes.
+    public float LimpTime => _limpTime;
+
+    public Vector3 HipsVelocity => _hips != null && !_hips.isKinematic ? _hips.linearVelocity : Vector3.zero;
+
     private readonly List<Rigidbody> _bodies = new List<Rigidbody>();
     private readonly List<Collider> _colliders = new List<Collider>();
     private Rigidbody _hips;
@@ -54,10 +62,97 @@ public class RagdollBody : MonoBehaviour
     private bool _frozen;
     private int _groundMask;
     private bool _built;
+    private Quaternion[] _blendFrom;
+    private Quaternion[] _blendTo;
+    private float _blendTime;
+    private float _blendSeconds;
 
     // Lets go of every limb and throws the whole body with one velocity, so the limbs
     // leave together instead of being torn apart by the joints.
     public void GoLimp(Vector3 velocity, Vector3 spin)
+    {
+        if (!Prepare())
+        {
+            return;
+        }
+
+        IsDriven = false;
+        Loosen(velocity);
+        _hips.angularVelocity = spin;
+    }
+
+    // For a copy whose flight runs on another machine: it starts from that machine's hips
+    // pose, and from then on only DriveHips moves the hips.
+    public void GoLimpDriven(Vector3 hipsPosition, Quaternion hipsRotation, Vector3 velocity)
+    {
+        if (!Prepare())
+        {
+            return;
+        }
+
+        IsDriven = true;
+        _hips.transform.SetPositionAndRotation(hipsPosition, hipsRotation);
+        Loosen(velocity);
+        _hips.isKinematic = true;
+    }
+
+    public void DriveHips(Vector3 position, Quaternion rotation)
+    {
+        if (IsDriven && IsLimp && !_frozen)
+        {
+            _hips.MovePosition(position);
+            _hips.MoveRotation(rotation);
+        }
+    }
+
+    public void GetHipsPose(out Vector3 position, out Quaternion rotation)
+    {
+        position = _hips != null ? _hips.position : transform.position;
+        rotation = _hips != null ? _hips.rotation : transform.rotation;
+    }
+
+    // The local rotation of every part below the hips, in build order: the lying pose to send.
+    public Quaternion[] CapturePose()
+    {
+        var pose = new Quaternion[Mathf.Max(_bodies.Count - 1, 0)];
+        for (int i = 0; i < pose.Length; i++)
+        {
+            pose[i] = _bodies[i + 1].transform.localRotation;
+        }
+
+        return pose;
+    }
+
+    // Freezes a driven copy where the owner's body came to rest, blending the limbs into
+    // the owner's lying pose so both screens show the same heap.
+    public void FreezeInto(Vector3 hipsPosition, Quaternion hipsRotation, Quaternion[] pose, float blendSeconds)
+    {
+        if (!IsLimp)
+        {
+            return;
+        }
+
+        Freeze();
+
+        // Setting the body as well as the transform skips the hips' interpolation, which would drag it back.
+        _hips.position = hipsPosition;
+        _hips.rotation = hipsRotation;
+        _hips.transform.SetPositionAndRotation(hipsPosition, hipsRotation);
+
+        // Another rig has other parts; its own limbs are better than a wrong pose.
+        if (pose == null || pose.Length != _bodies.Count - 1)
+        {
+            return;
+        }
+
+        _blendFrom = CapturePose();
+        _blendTo = pose;
+        _blendTime = 0f;
+        _blendSeconds = Mathf.Max(blendSeconds, 0.0001f);
+    }
+
+    // Records the pose for Recover and resets the timers. False when there is nothing to throw.
+    private bool Prepare()
     {
         if (!_built)
         {
@@ -66,7 +161,7 @@ public class RagdollBody : MonoBehaviour
 
         if (_hips == null || IsLimp)
         {
-            return;
+            return false;
         }
 
         IsLimp = true;
@@ -74,6 +169,7 @@ public class RagdollBody : MonoBehaviour
         _restTime = 0f;
         _limpTime = 0f;
         _groundTime = -1f;
+        _blendTo = null;
 
         for (int i = 0; i < _bones.Length; i++)
         {
@@ -81,6 +177,11 @@ public class RagdollBody : MonoBehaviour
             _boneRotations[i] = _bones[i].localRotation;
         }
 
+        return true;
+    }
+
+    private void Loosen(Vector3 velocity)
+    {
         // A disabled Animator stops writing the bone poses; speed 0 would still overwrite them.
         _animator.enabled = false;
 
@@ -100,8 +201,6 @@ public class RagdollBody : MonoBehaviour
             body.isKinematic = false;
             body.linearVelocity = velocity;
         }
-
-        _hips.angularVelocity = spin;
     }
 
     // Hands the bones back to the Animator, which snaps them to the current animation pose.
@@ -113,7 +212,9 @@ public class RagdollBody : MonoBehaviour
         }
 
         IsLimp = false;
+        IsDriven = false;
         _frozen = false;
+        _blendTo = null;
         foreach (Rigidbody body in _bodies)
         {
             body.isKinematic = true;
@@ -151,6 +252,19 @@ public class RagdollBody : MonoBehaviour
 
         float dt = Time.fixedDeltaTime;
         _limpTime += dt;
+
+        // A driven copy lands when the owner says so. It plays a little behind the owner,
+        // so its own safety limit waits a second longer for that message.
+        if (IsDriven)
+        {
+            if (_limpTime >= maxLimpSeconds + 1f)
+            {
+                Freeze();
+            }
+
+            return;
+        }
+
         _restTime = _hips.linearVelocity.magnitude < restSpeed ? _restTime + dt : 0f;
 
         // Ground under the hips while falling or lying, never a wall hit in mid-air.
@@ -174,9 +288,32 @@ public class RagdollBody : MonoBehaviour
         _frozen = true;
         foreach (Rigidbody body in _bodies)
         {
-            body.linearVelocity = Vector3.zero;
-            body.angularVelocity = Vector3.zero;
-            body.isKinematic = true;
+            if (!body.isKinematic)
+            {
+                body.linearVelocity = Vector3.zero;
+                body.angularVelocity = Vector3.zero;
+                body.isKinematic = true;
+            }
+        }
+    }
+
+    private void LateUpdate()
+    {
+        if (_blendTo == null)
+        {
+            return;
+        }
+
+        _blendTime += Time.deltaTime;
+        float t = Mathf.Clamp01(_blendTime / _blendSeconds);
+        for (int i = 0; i < _blendTo.Length; i++)
+        {
+            _bodies[i + 1].transform.localRotation = Quaternion.Slerp(_blendFrom[i], _blendTo[i], t);
+        }
+
+        if (t >= 1f)
+        {
+            _blendTo = null;
         }
     }
 

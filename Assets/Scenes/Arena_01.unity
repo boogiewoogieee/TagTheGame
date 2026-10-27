@@ -5167,6 +5167,7 @@ GameObject:
   - component: {fileID: 537730881}
   - component: {fileID: 537730882}
   - component: {fileID: 537730883}
+  - component: {fileID: 537730884}
   m_Layer: 0
   m_Name: MatchHud
   m_TagString: Untagged
@@ -5286,6 +5287,45 @@ MonoBehaviour:
       - m_Target: {fileID: 537730881}
         m_TargetAssemblyTypeName: MatchExit, Assembly-CSharp
         m_MethodName: LeaveToMenu
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: 
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+--- !u!114 &537730884
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 537730877}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ab73dcc3cfea0fa47a485ba6c7244733, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RoundCountdown
+  match: {fileID: 900908509}
+  pauseMenu: {fileID: 537730882}
+  mixerGroup: {fileID: -7128067719386893152, guid: 204ae77320b536d459d12c2126255a73, type: 2}
+  tickClip: {fileID: 0}
+  goClip: {fileID: 0}
+  volume: 0.7
+  onIntro:
+    m_PersistentCalls:
+      m_Calls: []
+  onTick:
+    m_PersistentCalls:
+      m_Calls: []
+  onGo:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 1561719586}
+        m_TargetAssemblyTypeName: CameraFovPunch, Assembly-CSharp
+        m_MethodName: Punch
         m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -10176,6 +10216,11 @@ MonoBehaviour:
       MaxSecondsBetweenUpdates: 0
     m_InternalValue: 0
   NextRoundAtServerTime:
+    UpdateTraits:
+      MinSecondsBetweenUpdates: 0
+      MaxSecondsBetweenUpdates: 0
+    m_InternalValue: 0
+  RoundStartsAtServerTime:
     UpdateTraits:
       MinSecondsBetweenUpdates: 0
       MaxSecondsBetweenUpdates: 0
@@ -15764,6 +15809,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 2070925441746177671, guid: a1a802ecaf6775746bb2a929fb554ad8, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1561719585}
+    - targetCorrespondingSourceObject: {fileID: 2070925441746177671, guid: a1a802ecaf6775746bb2a929fb554ad8, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1561719586}
   m_SourcePrefab: {fileID: 100100000, guid: a1a802ecaf6775746bb2a929fb554ad8, type: 3}
 --- !u!1 &1561719584 stripped
 GameObject:
@@ -15794,6 +15842,20 @@ MonoBehaviour:
     FrequencyGain: 1
     Duration: 1
     m_NoiseOffsets: {x: 0, y: 0, z: 0}
+--- !u!114 &1561719586
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1561719584}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 40f28c845eabe974d95a79d1aa2f8b55, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CameraFovPunch
+  degrees: 4
+  seconds: 0.3
 --- !u!1001 &1561985187
 PrefabInstance:
   m_ObjectHideFlags: 0

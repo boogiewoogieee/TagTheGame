@@ -19,6 +19,7 @@ MonoBehaviour:
   roundsToWin: 2
   betweenRoundsSeconds: 4
   nextArenaScene: 
+  countdownSeconds: 3.6
   blastRadius: 6
   blastUpSpeed: 13
   blastOutSpeed: 7

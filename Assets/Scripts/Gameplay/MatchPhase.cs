@@ -4,5 +4,8 @@ public enum MatchPhase : byte
     WaitingForPlayers,
     Playing,
     RoundOver,
-    MatchOver
+    MatchOver,
+
+    // The 3-2-1-GO at the start of a round: the holder is known, nobody may move yet.
+    Countdown
 }

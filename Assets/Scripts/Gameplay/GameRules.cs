@@ -32,6 +32,11 @@ public class GameRules : ScriptableObject
     [Tooltip("Scene offered as \"Next level\" on the results screen. Leave empty while there is only one arena.")]
     public string nextArenaScene = "";
 
+    [Header("Round start")]
+    [Tooltip("Length of the 3-2-1-GO countdown at the start of every round, in seconds. The last 3 s are the digits; whatever is left before them shows the round number and who has the bomb.")]
+    [Min(3f)]
+    public float countdownSeconds = 3.6f;
+
     [Header("Blast")]
     [Tooltip("Players this close to the bomb are thrown by the explosion, in metres. The holder always is.")]
     [Min(0f)]
