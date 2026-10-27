@@ -553,8 +553,9 @@ public class MatchManager : NetworkBehaviour
         _holderSince = now;
     }
 
-    // Every machine throws its own copies of the players, slows down and watches the flight:
-    // its own body if it flew, otherwise the holder's.
+    // Every machine throws its own player (the other copy flies when its owner says so),
+    // slows down and watches a flight: its own body if it flew, otherwise the holder's,
+    // who always flies.
     private void ThrowPlayers(Vector3 origin, ulong holderId)
     {
         BlastReaction watched = null;
@@ -567,8 +568,14 @@ public class MatchManager : NetworkBehaviour
             }
 
             bool isHolder = player.OwnerClientId == holderId;
-            bool flew = reaction.Launch(origin, isHolder, rules.blastRadius, rules.blastUpSpeed, rules.blastOutSpeed);
-            if (flew && (player.IsOwner || (watched == null && isHolder)))
+            if (player.IsOwner)
+            {
+                if (reaction.Launch(origin, isHolder, rules.blastRadius, rules.blastUpSpeed, rules.blastOutSpeed))
+                {
+                    watched = reaction;
+                }
+            }
+            else if (isHolder && watched == null)
             {
                 watched = reaction;
             }
@@ -597,7 +604,7 @@ public class MatchManager : NetworkBehaviour
             BlastReaction reaction = player.GetComponent<BlastReaction>();
             if (reaction != null)
             {
-                reaction.Reset();
+                reaction.ResetForRound(DetonateAtServerTime.Value);
             }
         }
     }

@@ -26,6 +26,7 @@ public class BlastCamera : MonoBehaviour
 
     private RagdollBody _target;
     private float _time;
+    private bool _seenLimp;
     private CinemachineFollow _follow;
 
     private void Awake()
@@ -50,6 +51,7 @@ public class BlastCamera : MonoBehaviour
 
         _target = body;
         _time = 0f;
+        _seenLimp = body.IsLimp;
         if (_follow != null)
         {
             Vector3 back = blastOrigin - body.Hips.position;
@@ -81,8 +83,10 @@ public class BlastCamera : MonoBehaviour
             return;
         }
 
+        // Another player's body goes limp only when its owner's launch message arrives.
         _time += Time.deltaTime;
-        if (!_target.IsLimp || _time >= maxSeconds)
+        _seenLimp |= _target.IsLimp;
+        if ((_seenLimp && !_target.IsLimp) || _time >= maxSeconds)
         {
             Release();
         }
