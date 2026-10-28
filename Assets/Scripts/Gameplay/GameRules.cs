@@ -37,6 +37,11 @@ public class GameRules : ScriptableObject
     [Min(3f)]
     public float countdownSeconds = 3.6f;
 
+    [Header("Fuse feedback")]
+    [Tooltip("The last seconds of the fuse, when the ticking speeds up, the timer turns red and the holder sees a red vignette and hears a heartbeat.")]
+    [Min(0f)]
+    public float fuseDangerSeconds = 5f;
+
     [Header("Blast")]
     [Tooltip("Players this close to the bomb are thrown by the explosion, in metres. The holder always is.")]
     [Min(0f)]

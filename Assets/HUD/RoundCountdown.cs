@@ -72,12 +72,12 @@ public class RoundCountdown : MonoBehaviour
     {
         if (tickClip == null)
         {
-            tickClip = Tone("CountdownTick", 880f, 880f, 0.09f);
+            tickClip = GeneratedSounds.Tone("CountdownTick", 880f, 880f, 0.09f);
         }
 
         if (goClip == null)
         {
-            goClip = Tone("CountdownGo", 1175f, 1760f, 0.35f);
+            goClip = GeneratedSounds.Tone("CountdownGo", 1175f, 1760f, 0.35f);
         }
 
         _tickSources = new[] { MakeSource(tickClip), MakeSource(tickClip) };
@@ -266,26 +266,5 @@ public class RoundCountdown : MonoBehaviour
         source.volume = volume;
         source.outputAudioMixerGroup = mixerGroup;
         return source;
-    }
-
-    // A short sine beep with a fast attack and a falling tail, so no audio asset is needed.
-    private static AudioClip Tone(string name, float fromHz, float toHz, float seconds)
-    {
-        const int rate = 44100;
-        int count = Mathf.CeilToInt(rate * seconds);
-        float[] data = new float[count];
-        double phase = 0.0;
-        for (int i = 0; i < count; i++)
-        {
-            float t = (float)i / count;
-            phase += 2.0 * Math.PI * Mathf.Lerp(fromHz, toHz, t) / rate;
-            float attack = Mathf.Min(1f, i / (0.004f * rate));
-            float tail = Mathf.Pow(1f - t, 1.5f);
-            data[i] = (float)Math.Sin(phase) * attack * tail;
-        }
-
-        AudioClip clip = AudioClip.Create(name, count, 1, rate, false);
-        clip.SetData(data, 0);
-        return clip;
     }
 }

@@ -11,6 +11,30 @@
     -unity-text-align: middle-center;
     -unity-text-outline-width: 2px;
     -unity-text-outline-color: rgb(0, 0, 0);
+    transition-property: scale, color;
+    transition-duration: 0.3s, 0.3s;
+    transition-timing-function: ease-out, ease-out;
+}
+
+/* The last seconds of the fuse: red, and each new second pops in big and settles. */
+.hud-timer--danger {
+    color: rgb(255, 64, 40);
+}
+
+.hud-timer--pop {
+    scale: 1.4 1.4;
+    transition-duration: 0s, 0s;
+}
+
+/* Red screen edges for the holder; FuseDangerHud sets the picture and the opacity. */
+.hud-vignette {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    opacity: 0;
+    -unity-background-scale-mode: stretch-to-fill;
 }
 
 .hud-status {

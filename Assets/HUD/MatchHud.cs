@@ -73,6 +73,15 @@ public class MatchHud : MonoBehaviour
             {
                 _shownSeconds = seconds;
                 _timer.text = seconds.ToString();
+
+                bool danger = match.rules != null && FuseRules.IsDangerSecond(seconds, match.rules.fuseDangerSeconds);
+                _timer.EnableInClassList("hud-timer--danger", danger);
+                if (danger)
+                {
+                    // On at once, off a moment later: the style's transition then shrinks it back smoothly.
+                    _timer.AddToClassList("hud-timer--pop");
+                    _timer.schedule.Execute(() => _timer.RemoveFromClassList("hud-timer--pop")).StartingIn(60);
+                }
             }
 
             bool hasBomb = match.LocalPlayerHasBomb;
