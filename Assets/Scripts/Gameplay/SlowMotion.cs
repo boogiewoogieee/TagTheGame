@@ -18,9 +18,14 @@ public class SlowMotion : MonoBehaviour
     [Tooltip("Real seconds to get back to normal speed.")]
     public float rampOutSeconds = 0.5f;
 
+    [Tooltip("Speed of the game during a hit-stop, for example at a pass. Not zero: physics needs a time step.")]
+    [Range(0.01f, 1f)]
+    public float hitStopScale = 0.05f;
+
     public bool IsPlaying { get; private set; }
 
     private float _elapsed;
+    private float _hitStopLeft;
     private float _normalFixedStep;
 
     private void Awake()
@@ -37,11 +42,36 @@ public class SlowMotion : MonoBehaviour
     public void Stop()
     {
         IsPlaying = false;
+        _hitStopLeft = 0f;
         Apply(1f);
+    }
+
+    // A near-freeze of a few hundredths of a second, so a hit lands. The blast's slow motion wins.
+    public void HitStop(float seconds)
+    {
+        if (IsPlaying || seconds <= 0f)
+        {
+            return;
+        }
+
+        _hitStopLeft = Mathf.Max(_hitStopLeft, seconds);
+        Apply(hitStopScale);
     }
 
     private void Update()
     {
+        if (_hitStopLeft > 0f && !IsPlaying)
+        {
+            _hitStopLeft -= Time.unscaledDeltaTime;
+            if (_hitStopLeft <= 0f)
+            {
+                _hitStopLeft = 0f;
+                Apply(1f);
+            }
+
+            return;
+        }
+
         if (!IsPlaying)
         {
             return;
@@ -73,7 +103,7 @@ public class SlowMotion : MonoBehaviour
     // Leaving the arena in the middle of the effect must not leave the menu in slow motion.
     private void OnDisable()
     {
-        if (IsPlaying)
+        if (IsPlaying || _hitStopLeft > 0f)
         {
             Stop();
         }

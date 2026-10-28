@@ -63,7 +63,7 @@ public class MatchManager : NetworkBehaviour
     private ulong _shownHolder = NoHolder;
 
     private double _holderSince;
-    private double _lastPassRequest;
+    private double _lastPassRequest = double.MinValue;
 
     // The only timer in the game: every machine works the remaining time out from the
     // synchronized server clock, so nothing is sent per frame.
@@ -102,6 +102,10 @@ public class MatchManager : NetworkBehaviour
     public IReadOnlyList<TagPlayer> Players => _players;
 
     public bool LocalPlayerHasBomb => IsSpawned && BombHolderId.Value == NetworkManager.LocalClientId;
+
+    // When this machine last asked the host for a pass, and to whom; pass feedback starts from it.
+    public double LastPassRequestAt => _lastPassRequest;
+    public ulong LastPassRequestTarget { get; private set; } = NoHolder;
 
     // False while the explosion and the flight are still worth watching.
     public bool RoundEndVisible => IsSpawned && NetworkManager.ServerTime.Time >= ShowResultAtServerTime.Value;
@@ -530,6 +534,7 @@ public class MatchManager : NetworkBehaviour
         }
 
         _lastPassRequest = now;
+        LastPassRequestTarget = otherPlayer.OwnerClientId;
         RequestPassRpc(otherPlayer.OwnerClientId);
     }
 

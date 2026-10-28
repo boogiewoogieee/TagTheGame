@@ -80,6 +80,27 @@ public static class GeneratedSounds
         return Make(name, data);
     }
 
+    // A tag: a short slap of noise with a bright pop that drops in pitch, so a pass is heard at once.
+    public static AudioClip Tag(string name)
+    {
+        const float seconds = 0.18f;
+        int count = Mathf.CeilToInt(Rate * seconds);
+        float[] data = new float[count];
+        var noise = new System.Random(3);
+        double phase = 0.0;
+        for (int i = 0; i < count; i++)
+        {
+            float t = (float)i / count;
+            float slap = (float)(noise.NextDouble() * 2.0 - 1.0) * Mathf.Exp(-t * 40f);
+            phase += 2.0 * Math.PI * Mathf.Lerp(880f, 330f, Mathf.Sqrt(t)) / Rate;
+            float attack = Mathf.Min(1f, i / (0.003f * Rate));
+            float pop = (float)Math.Sin(phase) * attack * Mathf.Pow(1f - t, 2f);
+            data[i] = slap * 0.6f + pop * 0.8f;
+        }
+
+        return Make(name, data);
+    }
+
     private static void AddThump(float[] data, int start, float seconds, float hz, float gain)
     {
         int count = Mathf.CeilToInt(Rate * seconds);

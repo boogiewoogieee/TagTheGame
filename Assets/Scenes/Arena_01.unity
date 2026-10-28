@@ -12636,6 +12636,7 @@ GameObject:
   - component: {fileID: 900908507}
   - component: {fileID: 900908509}
   - component: {fileID: 900908510}
+  - component: {fileID: 900908511}
   m_Layer: 0
   m_Name: MatchManager
   m_TagString: Untagged
@@ -12846,6 +12847,60 @@ MonoBehaviour:
     UpdateTraits:
       MinSecondsBetweenUpdates: 0
       MaxSecondsBetweenUpdates: 0
+--- !u!114 &900908511
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 900908506}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a2cb678e808e1914b9db160ae55f8a01, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PassFeedback
+  match: {fileID: 900908509}
+  slowMotion: {fileID: 1845112530}
+  mixerGroup: {fileID: -7128067719386893152, guid: 204ae77320b536d459d12c2126255a73, type: 2}
+  tagClip: {fileID: 0}
+  volume: 0.9
+  hitStopSeconds: 0.05
+  popSeconds: 0.25
+  popPeak: 1.6
+  flashColor: {r: 1, g: 0.7, b: 0.3, a: 1}
+  flashIntensity: 6
+  flashRange: 5
+  flashSeconds: 0.3
+  onPassShown:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 1561719586}
+        m_TargetAssemblyTypeName: CameraFovPunch, Assembly-CSharp
+        m_MethodName: Punch
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: 
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  onBombReceived:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 537730878}
+        m_TargetAssemblyTypeName: MatchHud, Assembly-CSharp
+        m_MethodName: ShowBombReceived
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: 
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1001 &927123252
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -20685,6 +20740,7 @@ MonoBehaviour:
   rampInSeconds: 0.08
   holdSeconds: 1
   rampOutSeconds: 0.5
+  hitStopScale: 0.05
 --- !u!4 &1845112531
 Transform:
   m_ObjectHideFlags: 0

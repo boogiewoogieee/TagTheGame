@@ -20,6 +20,7 @@ public class MatchHud : MonoBehaviour
     private Label _score;
     private Label _countdown;
     private VisualElement _roundOver;
+    private VisualElement _passFlash;
     private int _shownSeconds = -1;
 
     private void OnEnable()
@@ -38,6 +39,7 @@ public class MatchHud : MonoBehaviour
         _score = root.Q<Label>("Score");
         _countdown = root.Q<Label>("Countdown");
         _roundOver = root.Q<VisualElement>("RoundOver");
+        _passFlash = root.Q<VisualElement>("PassFlash");
         _shownSeconds = -1;
     }
 
@@ -103,6 +105,25 @@ public class MatchHud : MonoBehaviour
             _score.text = match.LocalRoundsWon + " : " + match.OpponentRoundsWon;
             _countdown.text = "Next round in " + Mathf.CeilToInt(match.SecondsToNextRound);
         }
+    }
+
+    // Called when the local player has just been tagged: a warm flash over the screen and a pop of the status line.
+    public void ShowBombReceived()
+    {
+        Pop(_passFlash, "hud-pass-flash--on", 40);
+        Pop(_status, "hud-status--pop", 80);
+    }
+
+    // On at once, off a moment later: the style's transition then eases it back.
+    private static void Pop(VisualElement element, string className, long milliseconds)
+    {
+        if (element == null)
+        {
+            return;
+        }
+
+        element.AddToClassList(className);
+        element.schedule.Execute(() => element.RemoveFromClassList(className)).StartingIn(milliseconds);
     }
 
     private static void SetVisible(VisualElement element, bool visible)
