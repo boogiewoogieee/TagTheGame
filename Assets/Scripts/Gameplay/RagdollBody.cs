@@ -33,7 +33,20 @@ public class RagdollBody : MonoBehaviour
     public float maxLimpSeconds = 6f;
 
     // The camera follows the hips: they sit at the centre of mass, so the framing stays calm.
-    public Transform Hips => _hips != null ? _hips.transform : null;
+    // Another player's copy may be watched before its owner's launch message has made it go
+    // limp, so asking for the hips builds the ragdoll too.
+    public Transform Hips
+    {
+        get
+        {
+            if (!_built)
+            {
+                Build();
+            }
+
+            return _hips != null ? _hips.transform : null;
+        }
+    }
 
     public bool IsLimp { get; private set; }
 
