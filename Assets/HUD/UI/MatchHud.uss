@@ -37,6 +37,71 @@
     -unity-background-scale-mode: stretch-to-fill;
 }
 
+/* Fuse Rush: speed lines over the whole screen while it runs (FuseRushHud draws them). */
+.hud-rush-lines {
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    opacity: 0;
+}
+
+/* Fuse Rush skill icon, bottom right; only the holder sees it. */
+.hud-rush {
+    position: absolute;
+    right: 48px;
+    bottom: 48px;
+    align-items: center;
+    display: none;
+    opacity: 0.75;
+    transition-property: scale, opacity;
+    transition-duration: 0.25s, 0.25s;
+    transition-timing-function: ease-out-back, ease-out;
+}
+
+.hud-rush--ready,
+.hud-rush--active {
+    opacity: 1;
+}
+
+.hud-rush--pop {
+    scale: 1.25 1.25;
+    transition-duration: 0s, 0s;
+}
+
+.hud-rush-ring {
+    width: 104px;
+    height: 104px;
+    border-radius: 52px;
+    background-color: rgba(30, 26, 22, 0.55);
+    align-items: center;
+    justify-content: center;
+}
+
+.hud-rush-key {
+    font-size: 40px;
+    color: rgb(255, 255, 255);
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+    -unity-text-outline-width: 1px;
+    -unity-text-outline-color: rgb(0, 0, 0);
+}
+
+.hud-rush-name {
+    margin-top: 6px;
+    font-size: 20px;
+    color: rgb(255, 255, 255);
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+    -unity-text-outline-width: 1px;
+    -unity-text-outline-color: rgb(0, 0, 0);
+}
+
+.hud-rush--active .hud-rush-name {
+    color: rgb(255, 217, 77);
+}
+
 .hud-status {
     margin-top: 10px;
     font-size: 40px;

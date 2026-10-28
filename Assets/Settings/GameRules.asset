@@ -21,6 +21,10 @@ MonoBehaviour:
   nextArenaScene: 
   countdownSeconds: 3.6
   fuseDangerSeconds: 5
+  rushSpeedMultiplier: 1.3
+  rushSeconds: 2
+  rushCooldownSeconds: 8
+  rushAfterPassSeconds: 3
   blastRadius: 6
   blastUpSpeed: 13
   blastOutSpeed: 7

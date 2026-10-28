@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using StarterAssets;
 using Unity.Cinemachine;
 using Unity.Netcode;
@@ -40,6 +41,14 @@ public class TagPlayer : NetworkBehaviour
     // The countdown freezes the player but keeps the cursor hidden; the round-over card frees it.
     private bool _keepCursorLocked;
     private bool _cursorLocked;
+
+    // Speed changes from several sources (Fuse Rush now; modifiers and pickups later) multiply.
+    private readonly Dictionary<Object, float> _speedFactors = new Dictionary<Object, float>();
+    private float _baseMoveSpeed;
+    private float _baseSprintSpeed;
+
+    // True on the owning machine while the player may act: not frozen by the match or the menu.
+    public bool InputEnabled => IsOwner && _matchAllowsInput && !_menuOpen;
 
     public override void OnNetworkSpawn()
     {
@@ -106,6 +115,43 @@ public class TagPlayer : NetworkBehaviour
         ApplyInputState();
     }
 
+    // Owner only. Sets one source's speed multiple (1 removes it); the controller gets the product of all of them.
+    public void SetSpeedFactor(Object source, float factor)
+    {
+        if (!IsOwner || _controller == null)
+        {
+            return;
+        }
+
+        bool known = _speedFactors.TryGetValue(source, out float current);
+        if (Mathf.Approximately(factor, 1f))
+        {
+            if (!known)
+            {
+                return;
+            }
+
+            _speedFactors.Remove(source);
+        }
+        else if (known && Mathf.Approximately(current, factor))
+        {
+            return;
+        }
+        else
+        {
+            _speedFactors[source] = factor;
+        }
+
+        float product = 1f;
+        foreach (float value in _speedFactors.Values)
+        {
+            product *= value;
+        }
+
+        _controller.MoveSpeed = _baseMoveSpeed * product;
+        _controller.SprintSpeed = _baseSprintSpeed * product;
+    }
+
     // Called by the in-game menu when it opens or closes.
     public void SetMenuOpen(bool menuOpen)
     {
@@ -166,6 +212,8 @@ public class TagPlayer : NetworkBehaviour
         _inputs.enabled = true;
         _controller.enabled = true;
         _playerInput.enabled = true;
+        _baseMoveSpeed = _controller.MoveSpeed;
+        _baseSprintSpeed = _controller.SprintSpeed;
 
         // The arena also has the blast camera; the follow camera is the one without a BlastCamera.
         foreach (CinemachineCamera candidate in FindObjectsByType<CinemachineCamera>(FindObjectsInactive.Exclude))

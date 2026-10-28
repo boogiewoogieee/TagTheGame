@@ -3,6 +3,13 @@
     <Style src="MatchHud.uss" />
     <ui:VisualElement name="MatchHud" picking-mode="Ignore" class="hud-root">
         <ui:VisualElement name="DangerVignette" picking-mode="Ignore" class="hud-vignette" />
+        <ui:VisualElement name="RushLines" picking-mode="Ignore" class="hud-rush-lines" />
+        <ui:VisualElement name="RushSkill" picking-mode="Ignore" class="hud-rush">
+            <ui:VisualElement name="RushRing" picking-mode="Ignore" class="hud-rush-ring">
+                <ui:Label name="RushKey" text="Q" picking-mode="Ignore" class="hud-rush-key" />
+            </ui:VisualElement>
+            <ui:Label name="RushName" text="FUSE RUSH" picking-mode="Ignore" class="hud-rush-name" />
+        </ui:VisualElement>
         <ui:Label name="Timer" text="30" picking-mode="Ignore" class="hud-timer" />
         <ui:Label name="Status" text="Opponent has the bomb" picking-mode="Ignore" class="hud-status" />
         <ui:VisualElement name="RoundOver" picking-mode="Ignore" class="hud-overlay hud-round-over">

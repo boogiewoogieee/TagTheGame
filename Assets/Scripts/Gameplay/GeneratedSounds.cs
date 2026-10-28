@@ -55,6 +55,31 @@ public static class GeneratedSounds
         return Make(name, data);
     }
 
+    // A rush of air: noise through a low-pass filter that opens and closes again as it swells and fades.
+    public static AudioClip Whoosh(string name, float seconds)
+    {
+        int count = Mathf.CeilToInt(Rate * seconds);
+        float[] data = new float[count];
+        var noise = new System.Random(7);
+        float low = 0f;
+        float band = 0f;
+        for (int i = 0; i < count; i++)
+        {
+            float t = (float)i / count;
+            float swell = Mathf.Sin(Mathf.PI * Mathf.Pow(t, 0.6f));
+
+            // Two one-pole filters: the difference keeps the middle of the noise, which sounds like wind.
+            float cutoffHz = Mathf.Lerp(300f, 2600f, swell);
+            float k = 1f - Mathf.Exp(-2f * Mathf.PI * cutoffHz / Rate);
+            float white = (float)(noise.NextDouble() * 2.0 - 1.0);
+            low += (white - low) * k;
+            band += (low - band) * (k * 0.25f);
+            data[i] = (low - band) * swell * 2.2f;
+        }
+
+        return Make(name, data);
+    }
+
     private static void AddThump(float[] data, int start, float seconds, float hz, float gain)
     {
         int count = Mathf.CeilToInt(Rate * seconds);
