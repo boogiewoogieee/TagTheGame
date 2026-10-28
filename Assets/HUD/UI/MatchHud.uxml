@@ -3,6 +3,7 @@
     <Style src="MatchHud.uss" />
     <ui:VisualElement name="MatchHud" picking-mode="Ignore" class="hud-root">
         <ui:VisualElement name="DangerVignette" picking-mode="Ignore" class="hud-vignette" />
+        <ui:VisualElement name="PassFlash" picking-mode="Ignore" class="hud-pass-flash" />
         <ui:VisualElement name="RushLines" picking-mode="Ignore" class="hud-rush-lines" />
         <ui:VisualElement name="RushSkill" picking-mode="Ignore" class="hud-rush">
             <ui:VisualElement name="RushRing" picking-mode="Ignore" class="hud-rush-ring">
