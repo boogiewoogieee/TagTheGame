@@ -42,6 +42,23 @@ public class GameRules : ScriptableObject
     [Min(0f)]
     public float fuseDangerSeconds = 5f;
 
+    [Header("Fuse Rush")]
+    [Tooltip("Move and sprint speed of the holder during a Fuse Rush, as a multiple of the normal speed.")]
+    [Min(1f)]
+    public float rushSpeedMultiplier = 1.3f;
+
+    [Tooltip("How long a Fuse Rush lasts, in seconds.")]
+    [Min(0.1f)]
+    public float rushSeconds = 2f;
+
+    [Tooltip("Seconds from pressing Fuse Rush until it can be used again. Counts from the press, so it includes the rush.")]
+    [Min(0.1f)]
+    public float rushCooldownSeconds = 8f;
+
+    [Tooltip("Seconds a player who just received the bomb must wait before rushing, so the bomb cannot ping-pong straight back.")]
+    [Min(0f)]
+    public float rushAfterPassSeconds = 3f;
+
     [Header("Blast")]
     [Tooltip("Players this close to the bomb are thrown by the explosion, in metres. The holder always is.")]
     [Min(0f)]

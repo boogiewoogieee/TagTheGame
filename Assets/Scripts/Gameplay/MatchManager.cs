@@ -98,6 +98,9 @@ public class MatchManager : NetworkBehaviour
 
     public int RoundNumber => LocalRoundsWon + OpponentRoundsWon + 1;
 
+    // Every player in the arena, on every machine.
+    public IReadOnlyList<TagPlayer> Players => _players;
+
     public bool LocalPlayerHasBomb => IsSpawned && BombHolderId.Value == NetworkManager.LocalClientId;
 
     // False while the explosion and the flight are still worth watching.
@@ -160,7 +163,6 @@ public class MatchManager : NetworkBehaviour
             return;
         }
 
-        SendPlayersToSpawn();
         StartMatch();
     }
 
@@ -264,7 +266,6 @@ public class MatchManager : NetworkBehaviour
             case MatchPhase.RoundOver:
                 if (now >= NextRoundAtServerTime.Value)
                 {
-                    SendPlayersToSpawn();
                     StartRound();
                 }
 
@@ -309,6 +310,14 @@ public class MatchManager : NetworkBehaviour
 
     private void StartRound()
     {
+        // Every round, the first one too, starts at a fresh pair of start points.
+        if (spawner != null)
+        {
+            spawner.PickRoundSpawns();
+        }
+
+        SendPlayersToSpawn();
+
         TagPlayer holder = _players[Random.Range(0, _players.Count)];
         BombHolderId.Value = holder.OwnerClientId;
 
@@ -609,7 +618,7 @@ public class MatchManager : NetworkBehaviour
         }
     }
 
-    private TagPlayer FindPlayer(ulong clientId)
+    public TagPlayer FindPlayer(ulong clientId)
     {
         foreach (TagPlayer player in _players)
         {

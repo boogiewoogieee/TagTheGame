@@ -16,7 +16,12 @@ public class PlayerSpawner : MonoBehaviour
     [Tooltip("Player prefab for everyone except the host, who gets the default player prefab of the NetworkManager. Leave empty to give every player the default.")]
     public GameObject clientPlayerPrefab;
 
+    [Tooltip("Where rounds start: each entry is a parent with two children, one per player. A random pair is used every round, never the same twice in a row, and the players swap sides at random. Leave empty to start every round at the spawn points.")]
+    public Transform[] roundSpawnPairs;
+
     private readonly Dictionary<ulong, int> _slotByClient = new Dictionary<ulong, int>();
+    private int _pairIndex = -1;
+    private bool _pairSwapped;
     private NetworkManager _networkManager;
     private bool _sceneEventsHooked;
 
@@ -55,13 +60,40 @@ public class PlayerSpawner : MonoBehaviour
         _slotByClient.Clear();
     }
 
-    // The pose a player first appeared at; used to send players back when a round restarts.
+    // Host only, before a round starts: chooses the pair TryGetSpawnPose hands out.
+    public void PickRoundSpawns()
+    {
+        if (roundSpawnPairs == null || roundSpawnPairs.Length == 0)
+        {
+            _pairIndex = -1;
+            return;
+        }
+
+        int index = Random.Range(0, roundSpawnPairs.Length);
+        if (roundSpawnPairs.Length > 1 && index == _pairIndex)
+        {
+            // Never the same place twice in a row: step to the next pair instead.
+            index = (index + 1) % roundSpawnPairs.Length;
+        }
+
+        _pairIndex = index;
+        _pairSwapped = Random.value < 0.5f;
+    }
+
+    // Where a player starts the round: its side of the chosen pair, or the point it first appeared at.
     public bool TryGetSpawnPose(ulong clientId, out Vector3 position, out Quaternion rotation)
     {
         if (_slotByClient.TryGetValue(clientId, out int slot))
         {
-            position = spawnPoints[slot].position;
-            rotation = spawnPoints[slot].rotation;
+            Transform point = spawnPoints[slot];
+            Transform pair = _pairIndex >= 0 ? roundSpawnPairs[_pairIndex] : null;
+            if (pair != null && pair.childCount >= 2 && slot < 2)
+            {
+                point = pair.GetChild(_pairSwapped ? 1 - slot : slot);
+            }
+
+            position = point.position;
+            rotation = point.rotation;
             return true;
         }
 
