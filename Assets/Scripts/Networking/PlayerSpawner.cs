@@ -13,9 +13,6 @@ public class PlayerSpawner : MonoBehaviour
     [Tooltip("One spawn point per player. When every point is taken, no more players spawn.")]
     public Transform[] spawnPoints;
 
-    [Tooltip("Player prefab for everyone except the host, who gets the default player prefab of the NetworkManager. Leave empty to give every player the default.")]
-    public GameObject clientPlayerPrefab;
-
     [Tooltip("Where rounds start: each entry is a parent with two children, one per player. A random pair is used every round, never the same twice in a row, and the players swap sides at random. Leave empty to start every round at the spawn points.")]
     public Transform[] roundSpawnPairs;
 
@@ -188,18 +185,28 @@ public class PlayerSpawner : MonoBehaviour
             return;
         }
 
-        // The host keeps the default player prefab; everyone else gets the other character.
-        GameObject prefab = _networkManager.NetworkConfig.PlayerPrefab;
-        if (clientPlayerPrefab != null && clientId != NetworkManager.ServerClientId)
-        {
-            prefab = clientPlayerPrefab;
-        }
-
         _slotByClient[clientId] = slot;
-        GameObject player = Instantiate(prefab, spawnPoints[slot].position, spawnPoints[slot].rotation);
+        GameObject player = Instantiate(_networkManager.NetworkConfig.PlayerPrefab, spawnPoints[slot].position, spawnPoints[slot].rotation);
+
+        // Handed over before the spawn, so the pick travels with it and every machine builds
+        // the same character before anything looks at its bones.
+        TagPlayer tagPlayer = player.GetComponent<TagPlayer>();
+        tagPlayer.SetCharacterForSpawn(PickFor(clientId, slot, tagPlayer.CharacterCount));
 
         // Spawned with the arena, so leaving the arena destroys the players with it.
         player.GetComponent<NetworkObject>().SpawnAsPlayerObject(clientId, destroyWithScene: true);
+    }
+
+    // The lobby's pick; the Editor shortcut has no lobby, so it uses the slot defaults.
+    private int PickFor(ulong clientId, int slot, int characterCount)
+    {
+        ConnectionNotes notes = _networkManager.GetComponent<ConnectionNotes>();
+        if (notes != null && notes.PlayerCharacters.TryGetValue(clientId, out int pick) && CharacterRules.IsValid(pick, characterCount))
+        {
+            return pick;
+        }
+
+        return CharacterRules.DefaultFor(slot, characterCount);
     }
 
     private int FindFreeSlot()
