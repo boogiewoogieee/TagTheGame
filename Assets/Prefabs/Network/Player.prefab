@@ -470,8 +470,15 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   cameraRoot: {fileID: 8548883719510028461}
   listener: {fileID: 2691534226484060402}
+  characters: {fileID: 11400000, guid: 7339d5dc672eb334c821d7c7fb3e876b, type: 2}
+  modelParent: {fileID: 4609180196245963068}
   bombLocalPosition: {x: 0.005712614, y: -0, z: -0.23498353}
   bombLocalEulerAngles: {x: 0.063504815, y: 179.69885, z: -0.00033379075}
+  CharacterIndex:
+    UpdateTraits:
+      MinSecondsBetweenUpdates: 0
+      MaxSecondsBetweenUpdates: 0
+    m_InternalValue: -1
 --- !u!114 &9215615115460046628
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -484,8 +491,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2b20f94905033b1438f25f04ad522c29, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BlastReaction
+  ShowTopMostFoldoutHeaderGroup: 1
   spinSpeed: 8
   holderOutwardFraction: 0.6
+  sendRate: 20
+  playbackDelay: 0.08
+  landBlendSeconds: 0.25
 --- !u!114 &4951139182005226105
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -504,6 +515,8 @@ MonoBehaviour:
   headRadius: 0.13
   restSpeed: 0.6
   restSeconds: 0.3
+  settleSeconds: 0.4
+  maxLimpSeconds: 6
 --- !u!1001 &6237085053381034657
 PrefabInstance:
   m_ObjectHideFlags: 0

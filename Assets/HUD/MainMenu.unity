@@ -376,6 +376,7 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   arenaScene: Arena_01
   requiredPlayers: 2
+  characters: {fileID: 11400000, guid: 7339d5dc672eb334c821d7c7fb3e876b, type: 2}
   Players:
     UpdateTraits:
       MinSecondsBetweenUpdates: 0

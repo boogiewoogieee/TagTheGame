@@ -20,27 +20,76 @@
 }
 
 .lobby-slots {
-    width: 760px;
+    flex-direction: row;
+    justify-content: space-between;
+    width: 1300px;
     align-self: center;
 }
 
+/* One card per player: portrait with arrows, name, character, ready state. */
 .lobby-slot {
-    flex-direction: row;
-    justify-content: space-between;
+    width: 620px;
+    height: 400px;
     align-items: center;
-    height: 60px;
-    margin-bottom: 10px;
-    padding-left: 20px;
-    padding-right: 20px;
+    padding-top: 15px;
+    padding-bottom: 10px;
     background-color: rgb(230, 240, 225);
     border-width: 2px;
     border-color: rgb(5, 58, 5);
     border-radius: 10px;
 }
 
+.lobby-pick {
+    flex-direction: row;
+    align-items: center;
+}
+
+.lobby-portrait {
+    width: 240px;
+    height: 240px;
+    margin-left: 25px;
+    margin-right: 25px;
+    background-color: rgb(107, 179, 74);
+    border-width: 4px;
+    border-color: rgb(5, 58, 5);
+    border-radius: 20px;
+    -unity-background-scale-mode: scale-to-fit;
+}
+
+/* The theme has no default Button look, so the arrows are styled in full. */
+.lobby-arrow {
+    width: 76px;
+    height: 76px;
+    margin: 0;
+    padding: 0;
+    font-size: 44px;
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+    color: rgb(30, 26, 22);
+    background-color: rgb(245, 154, 35);
+    border-width: 4px;
+    border-color: rgb(30, 26, 22);
+    border-radius: 38px;
+}
+
+.lobby-arrow:hover {
+    background-color: rgb(209, 191, 50);
+}
+
+.lobby-arrow:disabled {
+    opacity: 0.35;
+}
+
 .lobby-slot-name {
-    font-size: 30px;
+    margin-top: 12px;
+    font-size: 34px;
     color: rgb(5, 58, 5);
+    -unity-font-style: bold;
+}
+
+.lobby-slot-character {
+    font-size: 24px;
+    color: rgb(43, 45, 53);
     -unity-font-style: bold;
 }
 
@@ -52,6 +101,58 @@
 .lobby-slot--empty .lobby-slot-name {
     color: rgb(110, 135, 110);
     -unity-font-style: italic;
+}
+
+.lobby-slot--empty .lobby-portrait {
+    background-color: rgb(190, 200, 185);
+    border-color: rgb(110, 135, 110);
+}
+
+/* The 10 characters: your pick framed orange, the other player's pick greyed out. */
+.lobby-roster {
+    flex-direction: row;
+    justify-content: center;
+    margin-top: 15px;
+    margin-bottom: 5px;
+}
+
+.lobby-roster-cell {
+    width: 100px;
+    height: 100px;
+    margin: 0 6px;
+    padding: 0;
+    background-color: rgb(246, 231, 193);
+    border-width: 4px;
+    border-color: rgb(30, 26, 22);
+    border-radius: 16px;
+    -unity-background-scale-mode: scale-to-fit;
+    -unity-text-align: lower-right;
+    font-size: 20px;
+    -unity-font-style: bold;
+    color: rgb(30, 26, 22);
+}
+
+.lobby-roster-cell:hover {
+    scale: 1.08 1.08;
+}
+
+.lobby-roster-cell--mine {
+    border-width: 7px;
+    border-color: rgb(245, 154, 35);
+    background-color: rgb(107, 179, 74);
+}
+
+.lobby-roster-cell--taken {
+    background-color: rgb(122, 124, 132);
+    -unity-background-image-tint-color: rgb(150, 150, 150);
+}
+
+.lobby-roster-cell:disabled {
+    opacity: 0.55;
+}
+
+.lobby-roster-cell--mine:disabled {
+    opacity: 1;
 }
 
 .lobby-state--ready {
@@ -92,7 +193,7 @@
 .button.lobby-leave {
     width: 260px;
     height: 60px;
-    margin-top: 20px;
+    margin-top: 15px;
     font-size: 28px;
 }
 

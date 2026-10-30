@@ -1,0 +1,65 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 737a47bcc563eb149ab55a06763f2d5c, type: 3}
+  m_Name: CharacterCatalog
+  m_EditorClassIdentifier: Assembly-CSharp::CharacterCatalog
+  characters:
+  - displayName: Character 01
+    model: {fileID: 6666370650198795433, guid: 7c7c0c64e1d43174a9ab92c41a3e897c, type: 3}
+    portrait: {fileID: 2800000, guid: fccc3b9e1153cb04aaf3ee4ecc83757d, type: 3}
+    bombLocalPosition: {x: 0.005712614, y: -0, z: -0.23498353}
+    bombLocalEulerAngles: {x: 0.063504815, y: 179.69885, z: -0.00033379075}
+  - displayName: Character 02
+    model: {fileID: 1597729359011672831, guid: 9c67f3b7c9725ca4b9dd36a437e04f31, type: 3}
+    portrait: {fileID: 2800000, guid: efdd0a088a351d940ae5d76c9147452a, type: 3}
+    bombLocalPosition: {x: 0.005712614, y: -0, z: -0.23498353}
+    bombLocalEulerAngles: {x: 0.063504815, y: 179.69885, z: -0.00033379075}
+  - displayName: Character 03
+    model: {fileID: 6415561937286359620, guid: d1255cdc2aa17e64dac91efa5124e941, type: 3}
+    portrait: {fileID: 2800000, guid: dd7f28837eff5ad4aa98c821596342fc, type: 3}
+    bombLocalPosition: {x: 0.005712614, y: -0, z: -0.23498353}
+    bombLocalEulerAngles: {x: 0.063504815, y: 179.69885, z: -0.00033379075}
+  - displayName: Character 04
+    model: {fileID: 3560489353750393262, guid: 8cf71091043ddd54d9341585de596b13, type: 3}
+    portrait: {fileID: 2800000, guid: 17da369c7940fb54ebbceb177190a83a, type: 3}
+    bombLocalPosition: {x: 0.0057, y: 0, z: -0.2466}
+    bombLocalEulerAngles: {x: 0.063504815, y: 179.69885, z: -0.00033379075}
+  - displayName: Character 05
+    model: {fileID: 4324779109626998850, guid: d985f15668df6d745a55e7bafb01357b, type: 3}
+    portrait: {fileID: 2800000, guid: f6890ad2e1040c5429427715d552e641, type: 3}
+    bombLocalPosition: {x: 0.005712614, y: -0, z: -0.23498353}
+    bombLocalEulerAngles: {x: 0.063504815, y: 179.69885, z: -0.00033379075}
+  - displayName: Character 06
+    model: {fileID: 6463178797277354336, guid: fc2efff696743074ebe14a5214e205d8, type: 3}
+    portrait: {fileID: 2800000, guid: 989b839dd21543f4a99e5d38db3beed3, type: 3}
+    bombLocalPosition: {x: 0.005712614, y: -0, z: -0.23498353}
+    bombLocalEulerAngles: {x: 0.063504815, y: 179.69885, z: -0.00033379075}
+  - displayName: Character 07
+    model: {fileID: 6971121201570370863, guid: db91a7b2101a20d4cb6d32da43560d1a, type: 3}
+    portrait: {fileID: 2800000, guid: ed8ab8f5c8ee92d449ee5dea37b05cac, type: 3}
+    bombLocalPosition: {x: 0.005712614, y: -0, z: -0.23498353}
+    bombLocalEulerAngles: {x: 0.063504815, y: 179.69885, z: -0.00033379075}
+  - displayName: Character 08
+    model: {fileID: 3927503875114477191, guid: e760aac9727569a4faff8e529b1f4ebe, type: 3}
+    portrait: {fileID: 2800000, guid: 332f19cd2accd2c46a364da864185b87, type: 3}
+    bombLocalPosition: {x: 0.005712614, y: -0, z: -0.23498353}
+    bombLocalEulerAngles: {x: 0.063504815, y: 179.69885, z: -0.00033379075}
+  - displayName: Character 09
+    model: {fileID: 9092202679672275406, guid: 03514bc77d960634eb7bebea16b66b4b, type: 3}
+    portrait: {fileID: 2800000, guid: 2c8422d00f08454458cb26579dbd5f18, type: 3}
+    bombLocalPosition: {x: 0.005712614, y: -0, z: -0.23498353}
+    bombLocalEulerAngles: {x: 0.063504815, y: 179.69885, z: -0.00033379075}
+  - displayName: Character 10
+    model: {fileID: 1332946792230564792, guid: cab265c9f8731714290ec0a1569e469d, type: 3}
+    portrait: {fileID: 2800000, guid: 2b463b96a152f784a8797f9d5e3e561a, type: 3}
+    bombLocalPosition: {x: 0.005712614, y: -0, z: -0.23498353}
+    bombLocalEulerAngles: {x: 0.063504815, y: 179.69885, z: -0.00033379075}

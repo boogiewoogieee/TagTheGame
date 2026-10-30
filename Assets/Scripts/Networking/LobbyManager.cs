@@ -1,9 +1,10 @@
+using System.Collections.Generic;
 using Unity.Collections;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-// The lobby's state: who is in and who is ready. The host owns the list, like the match
+// The lobby's state: who is in, who is ready and who plays which character. The host owns the list, like the match
 // state in MatchManager; players only ever ask to change their own row, and the host
 // takes the sender from the network rather than from the message. Lives in the menu
 // scene as an in-scene NetworkObject, so it exists exactly while the lobby does.
@@ -15,6 +16,9 @@ public class LobbyManager : NetworkBehaviour
     [Tooltip("Players needed before the match can start, the host included.")]
     [Min(1)]
     public int requiredPlayers = 2;
+
+    [Tooltip("The characters players can pick. Must be the same asset the Player prefab uses.")]
+    public CharacterCatalog characters;
 
     public NetworkList<LobbyPlayer> Players = new NetworkList<LobbyPlayer>();
 
@@ -40,12 +44,18 @@ public class LobbyManager : NetworkBehaviour
 
     public bool LocalIsReady => TryGetPlayer(NetworkManager.LocalClientId, out LobbyPlayer player) && player.IsReady;
 
+    public int LocalCharacterIndex => TryGetPlayer(NetworkManager.LocalClientId, out LobbyPlayer player) ? player.CharacterIndex : CharacterRules.None;
+
+    public int CharacterCount => characters != null ? characters.Count : 0;
+
     public override void OnNetworkSpawn()
     {
         // The name was typed in the menu and kept on the NetworkManager, so it is still here
         // when the lobby comes back after a match.
         ConnectionNotes notes = NetworkManager.GetComponent<ConnectionNotes>();
         FixedString64Bytes name = new FixedString64Bytes(notes != null ? notes.LocalPlayerName : "");
+        int lastPick = notes != null ? notes.LocalCharacterIndex : CharacterRules.None;
+        Players.OnListChanged += OnPlayersChanged;
 
         if (IsServer)
         {
@@ -54,16 +64,18 @@ public class LobbyManager : NetworkBehaviour
             // A lobby that is open again takes players again (the match locked it).
             SetJoinable(true);
 
-            AddPlayer(NetworkManager.ServerClientId, name);
+            AddPlayer(NetworkManager.ServerClientId, name, lastPick);
         }
         else
         {
-            JoinLobbyRpc(name);
+            JoinLobbyRpc(name, lastPick);
         }
     }
 
     public override void OnNetworkDespawn()
     {
+        Players.OnListChanged -= OnPlayersChanged;
+
         if (IsServer)
         {
             NetworkManager.OnConnectionEvent -= OnConnectionEvent;
@@ -86,6 +98,31 @@ public class LobbyManager : NetworkBehaviour
         }
     }
 
+    // Asks for a character for this machine's player. The host refuses it while the
+    // player is ready or when the other player has it.
+    public void ChangeCharacter(int index)
+    {
+        if (IsSpawned && !LocalIsReady && index != LocalCharacterIndex)
+        {
+            SetCharacterRpc(index);
+        }
+    }
+
+    // The picks of everyone except this client: the ones it may not take.
+    public List<int> CharactersTakenBy(ulong exceptClientId)
+    {
+        List<int> taken = new List<int>();
+        foreach (LobbyPlayer player in Players)
+        {
+            if (player.ClientId != exceptClientId && player.CharacterIndex != CharacterRules.None)
+            {
+                taken.Add(player.CharacterIndex);
+            }
+        }
+
+        return taken;
+    }
+
     // Host only. Locks the door, clears the marks and takes everyone to the arena.
     public void StartMatch()
     {
@@ -101,9 +138,11 @@ public class LobbyManager : NetworkBehaviour
         if (notes != null)
         {
             notes.PlayerNames.Clear();
+            notes.PlayerCharacters.Clear();
             foreach (LobbyPlayer player in Players)
             {
                 notes.PlayerNames[player.ClientId] = player.Name.ToString();
+                notes.PlayerCharacters[player.ClientId] = player.CharacterIndex;
             }
         }
 
@@ -140,9 +179,9 @@ public class LobbyManager : NetworkBehaviour
     }
 
     [Rpc(SendTo.Server)]
-    private void JoinLobbyRpc(FixedString64Bytes name, RpcParams rpcParams = default)
+    private void JoinLobbyRpc(FixedString64Bytes name, int lastPick, RpcParams rpcParams = default)
     {
-        AddPlayer(rpcParams.Receive.SenderClientId, name);
+        AddPlayer(rpcParams.Receive.SenderClientId, name, lastPick);
     }
 
     [Rpc(SendTo.Server)]
@@ -159,7 +198,28 @@ public class LobbyManager : NetworkBehaviour
         Players[index] = player;
     }
 
-    private void AddPlayer(ulong clientId, FixedString64Bytes requestedName)
+    [Rpc(SendTo.Server)]
+    private void SetCharacterRpc(int character, RpcParams rpcParams = default)
+    {
+        ulong sender = rpcParams.Receive.SenderClientId;
+        int index = IndexOf(sender);
+        if (index < 0 || Players[index].IsReady || !CharacterRules.IsValid(character, CharacterCount))
+        {
+            return;
+        }
+
+        // Both players may click the same free character at once; the first request wins.
+        if (CharactersTakenBy(sender).Contains(character))
+        {
+            return;
+        }
+
+        LobbyPlayer player = Players[index];
+        player.CharacterIndex = character;
+        Players[index] = player;
+    }
+
+    private void AddPlayer(ulong clientId, FixedString64Bytes requestedName, int requestedCharacter)
     {
         if (IndexOf(clientId) >= 0)
         {
@@ -168,7 +228,8 @@ public class LobbyManager : NetworkBehaviour
 
         // The sender cleaned its name already, but the host is the one that decides.
         string name = LobbyRules.CleanName(requestedName.ToString(), "Player " + (Players.Count + 1));
-        Players.Add(new LobbyPlayer { ClientId = clientId, Name = new FixedString64Bytes(name), IsReady = false });
+        int character = CharacterRules.Resolve(requestedCharacter, Players.Count, CharacterCount, CharactersTakenBy(clientId));
+        Players.Add(new LobbyPlayer { ClientId = clientId, Name = new FixedString64Bytes(name), IsReady = false, CharacterIndex = character });
 
         // A newcomer changes who you would be playing against, so everyone confirms again.
         ResetReady();
@@ -190,6 +251,17 @@ public class LobbyManager : NetworkBehaviour
 
         // Frees the seat in the online list if the player vanished without leaving it.
         SetJoinable(true);
+    }
+
+    // Every machine remembers its own pick, so it asks for it again after a match.
+    private void OnPlayersChanged(NetworkListEvent<LobbyPlayer> changeEvent)
+    {
+        ConnectionNotes notes = NetworkManager.GetComponent<ConnectionNotes>();
+        int pick = LocalCharacterIndex;
+        if (notes != null && pick != CharacterRules.None)
+        {
+            notes.LocalCharacterIndex = pick;
+        }
     }
 
     private void ResetReady()

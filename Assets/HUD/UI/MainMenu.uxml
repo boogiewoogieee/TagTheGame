@@ -52,19 +52,32 @@
         </ui:VisualElement>
     </ui:VisualElement>
     <ui:VisualElement name="Lobby" style="flex-grow: 1; position: absolute; display: none; background-image: url(&quot;project://database/Assets/HUD/UI/Images/wp9382134-landscape-illustration-wallpapers.jpg?fileID=2800000&amp;guid=b16f70ace1869f841844913c1986a132&amp;type=3#wp9382134-landscape-illustration-wallpapers&quot;); width: 1920px; height: 1080px;">
-        <ui:VisualElement name="Background" style="flex-grow: 1; position: absolute; width: 1000px; height: 600px; align-self: center; background-color: rgb(131, 202, 149); margin-top: 264px; margin-right: 264px; margin-bottom: 264px; margin-left: 264px; top: 0; left: 199px; border-top-left-radius: 20px; border-top-right-radius: 20px; border-bottom-right-radius: 20px; border-bottom-left-radius: 20px;">
+        <ui:VisualElement name="Background" style="flex-grow: 1; position: absolute; width: 1500px; height: 880px; align-self: center; background-color: rgb(131, 202, 149); margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; top: 100px; left: 210px; border-top-left-radius: 20px; border-top-right-radius: 20px; border-bottom-right-radius: 20px; border-bottom-left-radius: 20px;">
             <ui:Button text="X" name="X" style="position: absolute; border-top-left-radius: 10px; border-top-right-radius: 10px; border-bottom-right-radius: 10px; border-bottom-left-radius: 10px; border-top-width: 0; border-right-width: 0; border-bottom-width: 0; border-left-width: 0; background-color: rgb(233, 206, 118); font-size: 20px; -unity-font-style: bold; height: 45px; width: 40px; margin-top: 10px; margin-right: 5px; margin-left: 5px; display: flex; padding-right: 15px; padding-left: 12px; align-content: auto; margin-bottom: 10px; padding-top: 11px;"/>
-            <ui:Label text="LOBBY" name="Lobby" style="margin-top: 50px; align-self: center; -unity-font-style: bold; font-size: 50px; margin-bottom: 15px;"/>
+            <ui:Label text="LOBBY" name="Lobby" style="margin-top: 25px; align-self: center; -unity-font-style: bold; font-size: 50px; margin-bottom: 15px;"/>
             <ui:VisualElement name="Slots" class="lobby-slots">
                 <ui:VisualElement name="Slot1" class="lobby-slot">
+                    <ui:VisualElement class="lobby-pick">
+                        <ui:Button text="&lt;" name="Slot1Prev" class="lobby-arrow"/>
+                        <ui:VisualElement name="Slot1Portrait" class="lobby-portrait"/>
+                        <ui:Button text="&gt;" name="Slot1Next" class="lobby-arrow"/>
+                    </ui:VisualElement>
                     <ui:Label text="Player 1" name="Slot1Name" class="lobby-slot-name"/>
+                    <ui:Label text="" name="Slot1Character" class="lobby-slot-character"/>
                     <ui:Label text="Not ready" name="Slot1State" class="lobby-slot-state lobby-state--not-ready"/>
                 </ui:VisualElement>
                 <ui:VisualElement name="Slot2" class="lobby-slot lobby-slot--empty">
+                    <ui:VisualElement class="lobby-pick">
+                        <ui:Button text="&lt;" name="Slot2Prev" class="lobby-arrow"/>
+                        <ui:VisualElement name="Slot2Portrait" class="lobby-portrait"/>
+                        <ui:Button text="&gt;" name="Slot2Next" class="lobby-arrow"/>
+                    </ui:VisualElement>
                     <ui:Label text="Waiting for a player..." name="Slot2Name" class="lobby-slot-name"/>
+                    <ui:Label text="" name="Slot2Character" class="lobby-slot-character"/>
                     <ui:Label text="" name="Slot2State" class="lobby-slot-state"/>
                 </ui:VisualElement>
             </ui:VisualElement>
+            <ui:VisualElement name="Roster" class="lobby-roster"/>
             <ui:Label text="Waiting for a player to join..." name="LobbyStatus" class="lobby-status"/>
             <ui:VisualElement name="LobbyButtons" class="lobby-buttons">
                 <ui:Button text="Ready" name="Ready" class="button lobby-button"/>

@@ -16,11 +16,22 @@ public class TagPlayer : NetworkBehaviour
     [Tooltip("The ears of this player. Switched on only on the machine that owns the player, so sounds are heard from the character and not from the camera behind it.")]
     public AudioListener listener;
 
-    [Tooltip("Where the bomb sits, measured from the chest bone of this model. Each character model needs its own value.")]
+    [Tooltip("The characters players can pick in the lobby. A pick is an index into this list.")]
+    public CharacterCatalog characters;
+
+    [Tooltip("Parent of the character model. At spawn its children are replaced by the picked character.")]
+    public Transform modelParent;
+
+    [Tooltip("Where the bomb sits, measured from the chest bone of the prefab's own model. A picked character uses its catalog value instead.")]
     public Vector3 bombLocalPosition;
 
-    [Tooltip("How the bomb is turned, relative to the chest bone of this model.")]
+    [Tooltip("How the bomb is turned, relative to the chest bone of the prefab's own model. A picked character uses its catalog value instead.")]
     public Vector3 bombLocalEulerAngles;
+
+    // Written by the host as the player spawns, so it arrives with the player on every machine.
+    public NetworkVariable<int> CharacterIndex = new NetworkVariable<int>(CharacterRules.None);
+
+    public int CharacterCount => characters != null ? characters.Count : 0;
 
     // The bomb is parented here while this player holds it. Created when the player spawns.
     public Transform BombAnchor { get; private set; }
@@ -32,6 +43,9 @@ public class TagPlayer : NetworkBehaviour
     private NetworkTransform _networkTransform;
     private MatchManager _match;
     private AudioListener _cameraListener;
+
+    // The host's pick for this player, handed over before the spawn.
+    private int _pickForSpawn = CharacterRules.None;
 
     // Two things can freeze the player: the match (round over) and the in-game menu.
     // Input only comes back when neither of them is holding it.
@@ -50,13 +64,27 @@ public class TagPlayer : NetworkBehaviour
     // True on the owning machine while the player may act: not frozen by the match or the menu.
     public bool InputEnabled => IsOwner && _matchAllowsInput && !_menuOpen;
 
+    // Host only, before the spawn. NGO warns about network variables written before the
+    // object is spawned, so the pick waits here until OnNetworkSpawn writes it. That still
+    // happens before the spawn message is built, so clients get it with the spawn.
+    public void SetCharacterForSpawn(int index)
+    {
+        _pickForSpawn = index;
+    }
+
     public override void OnNetworkSpawn()
     {
+        if (IsServer && _pickForSpawn != CharacterRules.None)
+        {
+            CharacterIndex.Value = _pickForSpawn;
+        }
+
         _playerInput = GetComponent<PlayerInput>();
         _inputs = GetComponent<StarterAssetsInputs>();
         _controller = GetComponent<ThirdPersonController>();
         _characterController = GetComponent<CharacterController>();
         _networkTransform = GetComponent<NetworkTransform>();
+        ApplyCharacter(characters != null ? characters.Get(CharacterIndex.Value) : null);
         BombAnchor = CreateBombAnchor();
 
         if (IsOwner)
@@ -244,6 +272,40 @@ public class TagPlayer : NetworkBehaviour
 
             listener.enabled = true;
         }
+    }
+
+    // Swaps the prefab's model for the picked one. Runs before the bomb anchor and the
+    // ragdoll look for bones, so both find the new skeleton.
+    private void ApplyCharacter(CharacterCatalog.Entry entry)
+    {
+        if (entry == null || entry.model == null || modelParent == null)
+        {
+            return;
+        }
+
+        // Destroyed at once rather than at the end of the frame: until then the Animator
+        // would still find the old skeleton's bones by name when it binds the new one.
+        for (int i = modelParent.childCount - 1; i >= 0; i--)
+        {
+            DestroyImmediate(modelParent.GetChild(i).gameObject);
+        }
+
+        GameObject model = Instantiate(entry.model, modelParent, false);
+        model.name = entry.model.name;
+
+        // One Animator drives the character, the one on the root that ThirdPersonController
+        // and NetworkAnimator use; it takes the model's avatar and the copy loses its own.
+        Animator animator = GetComponent<Animator>();
+        Animator modelAnimator = model.GetComponent<Animator>();
+        if (modelAnimator != null)
+        {
+            animator.avatar = modelAnimator.avatar;
+            DestroyImmediate(modelAnimator);
+        }
+
+        animator.Rebind();
+        bombLocalPosition = entry.bombLocalPosition;
+        bombLocalEulerAngles = entry.bombLocalEulerAngles;
     }
 
     // The chest is found through the humanoid mapping of the Animator instead of a bone name,
